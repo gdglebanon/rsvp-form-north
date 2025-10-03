@@ -65,8 +65,8 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
       variant,
       defaultValue = [],
       placeholder = "Select options",
-      animation,
-      maxCount,
+      animation = 0,
+      maxCount = 10, // Default to showing 10 items before showing "+X more"
       asChild = false,
       className,
       ...props
@@ -197,7 +197,7 @@ const MultiSelect = React.forwardRef<HTMLButtonElement, MultiSelectProps>(
         <PopoverContent className="w-full p-0">
           <Command>
             <CommandInput
-              placeholder="Search..."
+              placeholder="Search or Add..."
               onKeyDown={handleInputKeyDown}
               value={commandInput}
               onValueChange={setCommandInput}

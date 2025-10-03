@@ -239,8 +239,10 @@ export default function RegistrationForm() {
               <FormControl>
                 <Input 
                   placeholder="your.email@example.com" 
-                  type="email" 
-                  {...field} 
+                  type="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
