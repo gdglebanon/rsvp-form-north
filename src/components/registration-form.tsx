@@ -28,12 +28,15 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { UniversityCombobox } from "./ui/university-combobox";
 
 const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
+  email: z.string().email("Please enter a valid email address"),
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
   specialization: z.string().min(1, "Specialization is required."),
   experience: z.string().min(1, "Years of experience is required."),
   company: z.string().min(1, "Company or university is required."),
   region: z.string().min(1, "Region is required."),
-  age_gender: z.string().optional(),
+  age_range: z.string().optional(),
+  gender: z.string().optional(),
   linkedin: z.string().optional(),
   phone: z.string().optional(),
   attended_before: z.string().min(1, "This field is required."),
@@ -85,11 +88,15 @@ export default function RegistrationForm() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      email: "",
+      first_name: "",
+      last_name: "",
       specialization: "",
       experience: "",
       company: "",
       region: "",
+      age_range: "",
+      gender: "",
       attended_before: "",
       how_did_you_hear: "",
     },
@@ -155,17 +162,49 @@ export default function RegistrationForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
-          name="name"
+          name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name *</FormLabel>
+              <FormLabel>Email *</FormLabel>
               <FormControl>
-                <Input placeholder="First Name, Last name" {...field} />
+                <Input 
+                  placeholder="your.email@example.com" 
+                  type="email" 
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="first_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>First Name *</FormLabel>
+                <FormControl>
+                  <Input placeholder="First name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="last_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Last Name *</FormLabel>
+                <FormControl>
+                  <Input placeholder="Last name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <FormField
           control={form.control}
           name="specialization"
@@ -264,61 +303,51 @@ export default function RegistrationForm() {
                 </FormItem>
             )}
         />
-        <FormField
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
             control={form.control}
-            name="age_gender"
+            name="age_range"
             render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Age / Gender</FormLabel>
-                    <FormControl>
-                        <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="flex flex-col space-y-1"
-                        >
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                    <RadioGroupItem value="18-23_male" />
-                                </FormControl>
-                                <FormLabel className="font-normal">18-23 Male</FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                    <RadioGroupItem value="18-23_female" />
-                                </FormControl>
-                                <FormLabel className="font-normal">18-23 Female</FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                    <RadioGroupItem value="24-30_male" />
-                                </FormControl>
-                                <FormLabel className="font-normal">24-30 Male</FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                    <RadioGroupItem value="24-30_female" />
-                                </FormControl>
-                                <FormLabel className="font-normal">24-30 Female</FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                    <RadioGroupItem value="30+_male" />
-                                </FormControl>
-                                <FormLabel className="font-normal">30+ Male</FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                    <RadioGroupItem value="30+_female" />
-                                </FormControl>
-                                <FormLabel className="font-normal">30+ Female</FormLabel>
-                            </FormItem>
-                        </RadioGroup>
-                    </FormControl>
-                    <FormDescription>To ensure diversity</FormDescription>
-                    <FormMessage />
-                </FormItem>
+              <FormItem>
+                <FormLabel>Age Range (Optional)</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select age range" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="18-23">18 - 23 years</SelectItem>
+                    <SelectItem value="24-30">24 - 30 years</SelectItem>
+                    <SelectItem value="30+">30+ years</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
             )}
-        />
+          />
+          <FormField
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Gender (Optional)</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <FormField
           control={form.control}
           name="linkedin"
