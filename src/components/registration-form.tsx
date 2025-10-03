@@ -211,16 +211,64 @@ export default function RegistrationForm() {
   if (isSubmitted) {
     return (
       <div className="max-w-2xl mx-auto p-6">
-        <div className="flex flex-col items-center justify-center mb-8 space-y-2">
-          <Image 
-            src="/images/devfest-logo.svg" 
-            alt="DevFest Logo" 
-            width={200} 
-            height={80}
-            priority
-            className="h-auto"
-          />
-          <p className="text-lg font-medium text-muted-foreground">2 mins Registration Form</p>
+        <div className="flex flex-col items-center justify-center text-center space-y-6">
+          <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-full">
+            <svg
+              className="h-12 w-12 text-green-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-foreground">Thank you for your interest.</h2>
+          <div className="text-left space-y-4 text-muted-foreground max-w-lg">
+            <p>We will get back to you in 5 working days following up your registration if you're selected or you will be on waitlist list.</p>
+            
+            <p>If you are selected you will receive an email that a spot opened for you have limited time to redeem your ticket on our platform.</p>
+            
+            <p>If you're not a member in our community please join <a 
+              href="https://gdg.community.dev/gdg-coast-lebanon/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              GDG Coast Lebanon
+            </a></p>
+            
+            <p>You can also follow DevFest updates on Instagram 
+              <a 
+                href="https://www.instagram.com/gdgcoastlebanon/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline ml-1"
+              >
+                @gdgcoastlebanon
+              </a>{' '}
+              <a 
+                href="https://www.instagram.com/devfestlebanon/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                @devfestlebanon
+              </a>
+            </p>
+          </div>
+          <div className="pt-6">
+            <Button 
+              onClick={() => window.location.href = 'https://devfest.gdglebanon.com'}
+              className="px-6"
+            >
+              Back to Home
+            </Button>
+          </div>
         </div>
       </div>
     );
