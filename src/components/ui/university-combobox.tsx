@@ -20,6 +20,7 @@ import { firestore } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 
 interface University {
+  id: string;
   full_name: string;
   abbreviation: string;
   alt_text?: string;
@@ -30,19 +31,40 @@ interface UniversityComboboxProps {
   onChange: (value: string) => void;
 }
 
-export function UniversityCombobox({ value, onChange }: UniversityComboboxProps) {
+export function UniversityCombobox({ value = '', onChange }: UniversityComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [universities, setUniversities] = React.useState<University[]>([]);
   const [search, setSearch] = React.useState('');
 
   React.useEffect(() => {
     const fetchUniversities = async () => {
-      const querySnapshot = await getDocs(collection(firestore, 'universities'));
-      const fetchedUniversities = querySnapshot.docs.map(
-        (doc) => doc.data() as University
-      );
-      setUniversities(fetchedUniversities);
+      try {
+        const querySnapshot = await getDocs(collection(firestore, 'universities'));
+        
+        if (querySnapshot.empty) {
+          console.warn('No universities found in the database');
+          return;
+        }
+        
+        const fetchedUniversities = querySnapshot.docs.map(
+          (doc) => {
+            const data = doc.data();
+            // Handle both field name variations
+            return {
+              id: doc.id,
+              full_name: data.full_name || data.name, // Handle both full_name and name
+              abbreviation: data.abbreviation,
+              alt_text: data.alt_text || data.alt // Handle both alt_text and alt
+            } as University;
+          }
+        );
+        
+        setUniversities(fetchedUniversities);
+      } catch (error) {
+        console.error('Error fetching universities:', error);
+      }
     };
+    
     fetchUniversities();
   }, []);
 
@@ -59,6 +81,7 @@ export function UniversityCombobox({ value, onChange }: UniversityComboboxProps)
   };
 
   const filteredUniversities = universities.filter((uni) => {
+    if (!uni) return false;
     const searchTerm = search.toLowerCase();
     const nameMatch = uni.full_name?.toLowerCase().includes(searchTerm) ?? false;
     const abbreviationMatch = uni.abbreviation?.toLowerCase().includes(searchTerm) ?? false;
@@ -76,9 +99,10 @@ export function UniversityCombobox({ value, onChange }: UniversityComboboxProps)
           className="w-full justify-between"
         >
           {value
-            ? universities.find(
-                (uni) => uni.full_name?.toLowerCase() === value.toLowerCase()
-              )?.full_name || value
+            ? (universities.find(
+                (uni) => uni?.full_name?.toLowerCase() === value.toLowerCase() ||
+                         uni?.abbreviation?.toLowerCase() === value.toLowerCase()
+              )?.full_name) || value
             : 'Select company / university...'}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -88,7 +112,7 @@ export function UniversityCombobox({ value, onChange }: UniversityComboboxProps)
           <CommandInput
             placeholder="Search or add..."
             value={search}
-            onValueChange={setSearch}
+            onValueChange={(val) => setSearch(val || '')}
           />
           <CommandEmpty onSelect={handleCreate} className='cursor-pointer'>
             <div onClick={handleCreate} className="flex items-center justify-center p-2">

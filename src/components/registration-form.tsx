@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { UniversityCombobox } from "./ui/university-combobox";
+import Image from "next/image";
 
 const formSchema = z.object({
   email: z
@@ -208,28 +209,39 @@ export default function RegistrationForm() {
   }
 
   if (isSubmitted) {
-    return <SuccessMessage />;
+    return (
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="flex flex-col items-center justify-center mb-8 space-y-2">
+          <Image 
+            src="/images/devfest-logo.svg" 
+            alt="DevFest Logo" 
+            width={200} 
+            height={80}
+            priority
+            className="h-auto"
+          />
+          <p className="text-lg font-medium text-muted-foreground">2 mins Registration Form</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <Form {...form}>
-      <div className="mb-8 p-4 md:p-6 bg-blue-50 rounded-lg text-sm md:text-base">
-        <div className="prose prose-sm prose-blue max-w-none text-gray-700 space-y-3">
-          <p>DevFest Beirut is making a comeback! Mark your calendars for <strong>October 25th</strong> when we'll gather at <strong>Lebanese American University (LAU), Beirut Campus</strong> for a full day conference featuring talks, workshops, inspirational stories, and panels.</p>
-          
-          <p>Our speaker lineup includes 35+ professionals from both local and international companies, including <strong>Google Developer Experts, IBM, and more</strong>.</p>
-          
-          <p>We'd like to extend our gratitude to our sponsors and partners. <strong>Agenda to be published soon.</strong></p>
-          
-          <div className="mt-6 p-4 bg-blue-100 border-l-4 border-blue-500">
-            <p className="font-medium">Note:</p>
-            <p>For event diversity and to increase your chances of selection, please provide as much detail as possible in your application. Optional questions are skippable if you prefer not to share feedback.</p>
-            <p className="mt-2">Please wait for confirmation in the next two weeks or you will be placed on the waiting list. For any clarifications, reach out to <a href="mailto:info@gdglebanon.com" className="text-blue-600 hover:underline">info@gdglebanon.com</a>.</p>
-          </div>
-        </div>
+    <div className="max-w-2xl mx-auto p-6">
+      <div className="flex flex-col items-center justify-center mb-8 space-y-2">
+        <Image 
+          src="/images/devfest-logo.svg" 
+          alt="DevFest Logo" 
+          width={200} 
+          height={80}
+          priority
+          className="h-auto"
+        />
+        <p className="text-lg font-medium text-muted-foreground">2 mins Registration Form</p>
       </div>
       
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="email"
@@ -620,5 +632,6 @@ export default function RegistrationForm() {
         </Button>
       </form>
     </Form>
+  </div>
   );
 }
