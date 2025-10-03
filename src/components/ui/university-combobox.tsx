@@ -9,6 +9,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from '@/components/ui/command';
 import {
   Popover,
@@ -35,6 +36,7 @@ export function UniversityCombobox({ value = '', onChange }: UniversityComboboxP
   const [open, setOpen] = React.useState(false);
   const [universities, setUniversities] = React.useState<University[]>([]);
   const [search, setSearch] = React.useState('');
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
 
   React.useEffect(() => {
     const fetchUniversities = async () => {
@@ -75,70 +77,110 @@ export function UniversityCombobox({ value = '', onChange }: UniversityComboboxP
   };
 
   const handleCreate = () => {
-    onChange(search);
-    setOpen(false);
-    setSearch('');
+    if (search.trim()) {
+      onChange(search.trim());
+      setOpen(false);
+      setSearch('');
+    }
   };
 
-  const filteredUniversities = universities.filter((uni) => {
-    if (!uni) return false;
-    const searchTerm = search.toLowerCase();
-    const nameMatch = uni.full_name?.toLowerCase().includes(searchTerm) ?? false;
-    const abbreviationMatch = uni.abbreviation?.toLowerCase().includes(searchTerm) ?? false;
-    const altTextMatch = uni.alt_text?.toLowerCase().includes(searchTerm) ?? false;
-    return nameMatch || abbreviationMatch || altTextMatch;
-  });
+  const filteredUniversities = React.useMemo(() => {
+    const searchTerm = search.trim();
+    
+    if (!searchTerm) {
+      return universities; // Return all universities if search is empty
+    }
+    
+    const searchTerms = searchTerm.toLowerCase().split(/\s+/);
+    
+    const searchInText = (text?: string): boolean => {
+      if (!text) return false;
+      const lowerText = text.toLowerCase();
+      return searchTerms.every(term => lowerText.includes(term));
+    };
+
+    return universities.filter(uni => {
+      if (!uni) return false;
+      
+      return (
+        searchInText(uni.full_name) ||
+        searchInText(uni.abbreviation) ||
+        searchInText(uni.alt_text) ||
+        (uni.alt_text?.split(/\s*,\s*/).some(part => searchInText(part)) ?? false)
+      );
+    });
+  }, [universities, search]);
+
+  const selectedUniversity = React.useMemo(() => {
+    return universities.find(
+      (uni) => uni?.full_name?.toLowerCase() === value?.toLowerCase() ||
+               uni?.abbreviation?.toLowerCase() === value?.toLowerCase()
+    );
+  }, [universities, value]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          ref={buttonRef}
           variant="outline"
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {value
-            ? (universities.find(
-                (uni) => uni?.full_name?.toLowerCase() === value.toLowerCase() ||
-                         uni?.abbreviation?.toLowerCase() === value.toLowerCase()
-              )?.full_name) || value
-            : 'Select company / university...'}
+          <span className="truncate">
+            {selectedUniversity?.full_name || value || 'Select company or university...'}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-        <Command>
+      <PopoverContent 
+        className="w-[--radix-popover-trigger-width] p-0"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <Command shouldFilter={false}>
           <CommandInput
-            placeholder="Search or add..."
+            placeholder="Search by name, abbreviation, or alt text..."
             value={search}
-            onValueChange={(val) => setSearch(val || '')}
+            onValueChange={setSearch}
           />
-          <CommandEmpty onSelect={handleCreate} className='cursor-pointer'>
-            <div onClick={handleCreate} className="flex items-center justify-center p-2">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                <span>Create "{search}"</span>
-            </div>
-          </CommandEmpty>
-          <CommandGroup>
-            {filteredUniversities.map((uni) => (
-              <CommandItem
-                key={uni.abbreviation}
-                value={uni.full_name}
-                onSelect={handleSelect}
+          <CommandList>
+            <CommandEmpty className="py-2 text-center text-sm text-muted-foreground">
+              No university found.
+            </CommandEmpty>
+            <CommandGroup className="max-h-[300px] overflow-y-auto">
+              {filteredUniversities.map((uni) => (
+                <CommandItem
+                  key={uni.id}
+                  value={uni.full_name}
+                  onSelect={() => {
+                    onChange(uni.full_name);
+                    setOpen(false);
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Check
+                    className={cn(
+                      'mr-2 h-4 w-4 shrink-0',
+                      value?.toLowerCase() === uni.full_name?.toLowerCase()
+                        ? 'opacity-100'
+                        : 'opacity-0'
+                    )}
+                  />
+                  <span className="font-medium">{uni.full_name}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            {search && (
+              <div 
+                className="flex cursor-pointer items-center p-2 text-sm text-muted-foreground hover:bg-accent"
+                onClick={handleCreate}
               >
-                <Check
-                  className={cn(
-                    'mr-2 h-4 w-4',
-                    value?.toLowerCase() === uni.full_name?.toLowerCase()
-                      ? 'opacity-100'
-                      : 'opacity-0'
-                  )}
-                />
-                {uni.full_name}
-              </CommandItem>
-            ))}
-          </CommandGroup>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Create "{search}"
+              </div>
+            )}
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
