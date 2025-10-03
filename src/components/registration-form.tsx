@@ -29,7 +29,19 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { UniversityCombobox } from "./ui/university-combobox";
 
 const formSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address")
+    .refine(
+      (email) => {
+        const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+        return emailRegex.test(email);
+      },
+      {
+        message: "Please enter a valid email address (e.g., name@example.com)",
+      }
+    ),
   first_name: z.string().min(1, "First name is required"),
   last_name: z.string().min(1, "Last name is required"),
   specialization: z.string().min(1, "Specialization is required."),
@@ -167,7 +179,8 @@ export default function RegistrationForm() {
       await setDoc(profileRef, {
         ...dataToSave,
         userId: user.uid,
-        email: user.email || '',
+        // Use the form's email if available, otherwise fall back to the authenticated user's email
+        email: values.email || user.email || '',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       }, { merge: true });
