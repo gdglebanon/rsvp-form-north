@@ -42,6 +42,7 @@ const formSchema = z.object({
   attended_before: z.string().min(1, "This field is required."),
   main_takeaways: z.array(z.string()).optional(),
   how_did_you_hear: z.string().min(1, "This field is required."),
+  how_did_you_hear_details: z.string().optional(),
   personal_project: z.string().optional(),
   interested_technologies: z.array(z.string()).optional(),
   additional_comments: z.string().optional(),
@@ -97,6 +98,7 @@ export default function RegistrationForm() {
       region: "",
       age_range: "",
       gender: "",
+      how_did_you_hear_details: "",
       attended_before: "",
       how_did_you_hear: "",
     },
@@ -443,10 +445,39 @@ export default function RegistrationForm() {
                             <SelectItem value="friends">Friends / Colleagues</SelectItem>
                             <SelectItem value="gdg_website">GDG Lebanon website / newsletter</SelectItem>
                             <SelectItem value="other_events">Other community events</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
+                            <SelectItem value="partner">Via a partner</SelectItem>
+                            <SelectItem value="other">Other (please specify)</SelectItem>
                         </SelectContent>
                     </Select>
                     <FormMessage />
+                    {(form.watch('how_did_you_hear') === 'partner' || form.watch('how_did_you_hear') === 'other') && (
+                      <div className="mt-4">
+                        <FormField
+                          control={form.control}
+                          name="how_did_you_hear_details"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {form.watch('how_did_you_hear') === 'partner' 
+                                  ? 'Partner Name *' 
+                                  : 'Please specify here'}
+                              </FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder={
+                                    form.watch('how_did_you_hear') === 'partner'
+                                      ? 'Please specify the partner name'
+                                      : 'Please provide more details about how you heard about DevFest'
+                                  }
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
                 </FormItem>
             )}
         />
