@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { cn } from "@/lib/utils";
 import * as z from "zod";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -523,11 +524,23 @@ export default function RegistrationForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Phone number (Optional)</FormLabel>
+              <div className="space-y-1">
+                {field.value && field.value.replace(/^\+?961/, '').length > 0 && !/^\+961(03\d{6}|[7-9]\d{7})$/.test(field.value) && (
+                  <p className="text-sm text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-900/20 px-2 py-1 rounded-md shadow-sm">
+                    Please enter a valid Lebanese number (e.g., 71 234 567 or 03 123 456)
+                  </p>
+                )}
               <FormControl>
                 <div className="relative">
                   <Input 
                     placeholder="71 234 567" 
                     value={field.value ? field.value.replace(/^\+?961/, '') : ''}
+                    className={cn(
+                      'pl-12 transition-colors',
+                      field.value && !/^\+961(03\d{6}|[7-9]\d{7})$/.test(field.value) 
+                        ? 'border-yellow-500 focus-visible:ring-yellow-500' 
+                        : ''
+                    )}
                     onChange={(e) => {
                       // Remove all non-digit characters and any leading 961
                       let value = e.target.value.replace(/\D/g, '').replace(/^961/, '');
@@ -569,13 +582,13 @@ export default function RegistrationForm() {
                       field.onChange(fullNumber);
                     }}
                     inputMode="tel"
-                    className="pl-12"
                   />
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
                     +961
                   </span>
                 </div>
               </FormControl>
+              </div>
               <FormDescription>
                 Will be used for follow up in case we can't reach you via email
               </FormDescription>
@@ -612,7 +625,7 @@ export default function RegistrationForm() {
             name="main_takeaways"
             render={({ field }) => (
                 <FormItem>
-                    <FormLabel>What are your main takeaways from DevFest?</FormLabel>
+                    <FormLabel>What are your main takeaways from DevFest? *</FormLabel>
                         <FormControl>
                             <MultiSelect
                                 options={takeawayOptions}
