@@ -10,10 +10,10 @@ export default function Home() {
             <FilePenLine className="h-8 w-8" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Anonymous Registration
+            DevFest 2025
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Create your profile without sharing any personal information.
+            DevFest Beirut 2025 - [2 min Registration form]
           </p>
         </div>
         <RegistrationForm />
