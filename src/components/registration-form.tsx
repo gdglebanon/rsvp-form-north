@@ -76,8 +76,17 @@ export default function RegistrationForm() {
     startTransition(async () => {
       try {
         const profileRef = doc(firestore, "profiles", user.uid);
+        
+        // Filter out undefined values
+        const dataToSave: Partial<FormData> = {};
+        for (const key in values) {
+          if (values[key as keyof FormData] !== undefined) {
+            dataToSave[key as keyof FormData] = values[key as keyof FormData];
+          }
+        }
+
         await setDoc(profileRef, {
-          ...values,
+          ...dataToSave,
           createdAt: new Date(),
         });
 
