@@ -191,12 +191,6 @@ export default function RegistrationForm() {
       // Scroll to top of page
       window.scrollTo(0, 0);
       
-      // Show success toast
-      toast({
-        title: "Success!",
-        description: "Your registration has been submitted successfully.",
-      });
-      
       // Reset form
       form.reset();
       
