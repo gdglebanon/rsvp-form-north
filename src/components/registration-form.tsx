@@ -33,7 +33,7 @@ const formSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
   last_name: z.string().min(1, "Last name is required"),
   specialization: z.string().min(1, "Specialization is required."),
-  experience: z.string().min(1, "Years of experience is required."),
+  experience: z.string().array().min(1, "Please select at least one option"),
   company: z.string().min(1, "Company or university is required."),
   region: z.string().min(1, "Region is required."),
   age_range: z.string().optional(),
@@ -49,7 +49,26 @@ const formSchema = z.object({
   additional_comments: z.string().optional(),
 });
 
-type FormData = z.infer<typeof formSchema>;
+type FormData = {
+  email: string;
+  first_name: string;
+  last_name: string;
+  specialization: string;
+  experience: string[];
+  company: string;
+  region: string;
+  age_range?: string;
+  gender?: string;
+  linkedin?: string;
+  phone?: string;
+  attended_before: string;
+  main_takeaways?: string[];
+  how_did_you_hear: string;
+  how_did_you_hear_details?: string;
+  personal_project?: string;
+  interested_technologies?: string[];
+  additional_comments?: string;
+};
 
 const techOptions = [
     { label: "Angular", value: "angular" },
@@ -88,6 +107,7 @@ export default function RegistrationForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -96,7 +116,7 @@ export default function RegistrationForm() {
       first_name: "",
       last_name: "",
       specialization: "",
-      experience: "",
+      experience: [],
       company: "",
       region: "",
       age_range: "",
@@ -282,23 +302,32 @@ export default function RegistrationForm() {
           name="experience"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Years of Experience *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select your years of experience" />
-                        </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                        <SelectItem value="1-2">1-2 Years</SelectItem>
-                        <SelectItem value="3+">3+ Years</SelectItem>
-                        <SelectItem value="5+">5+ Years</SelectItem>
-                        <SelectItem value="fresh_grad">Fresh Grad / 3rd Year / Master</SelectItem>
-                        <SelectItem value="bootcamp">Bootcamp Attendee / Intern</SelectItem>
-                        <SelectItem value="team_lead">Team Lead / CTO / CEO</SelectItem>
-                        <SelectItem value="student">University Student</SelectItem>
-                    </SelectContent>
-                </Select>
+              <FormLabel> Experience / Study *</FormLabel>
+              <MultiSelect
+                options={[
+                  { label: "< 1 year experience", value: "0-1" },
+                  { label: "1-2 years experience", value: "1-2" },
+                  { label: "3-5 years experience", value: "3-5" },
+                  { label: "5+ years experience", value: "5-7" },
+                  { label: "CTO / CEO / Executive", value: "cto_ceo" },
+                  { label: "Manager / Team Lead", value: "manager_teamlead" },
+                  { label: "Intern", value: "intern" },
+                  { label: "Bootcamp Attendee", value: "bootcamp" },
+                  { label: "University Student", value: "student" },
+                  { label: "1st or 2nd Year Student", value: "grad_student" },
+                  { label: "3rd Year Student", value: "phd_student" },
+                  { label: "Master Student", value: "post_grad_student" },
+                ]}
+                className="w-full"
+                onValueChange={(value) => {
+                  setSelectedExperience(value);
+                  field.onChange(value);
+                }}
+                defaultValue={field.value || []}
+                value={selectedExperience}
+                placeholder="Select all that apply to you"
+                variant="inverted"
+              />
               <FormMessage />
             </FormItem>
           )}
@@ -396,7 +425,7 @@ export default function RegistrationForm() {
           name="linkedin"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>LinkedIn Profile Link</FormLabel>
+              <FormLabel>LinkedIn Profile Link (Optional)</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -412,7 +441,7 @@ export default function RegistrationForm() {
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone number</FormLabel>
+              <FormLabel>Phone number (Optional)</FormLabel>
               <FormControl>
                 <Input placeholder="Your Lebanese phone number" {...field} />
               </FormControl>
@@ -452,7 +481,7 @@ export default function RegistrationForm() {
             name="main_takeaways"
             render={({ field }) => (
                 <FormItem>
-                    <FormLabel>What are your main takeaways from DevFest? *</FormLabel>
+                    <FormLabel>What are your main takeaways from DevFest?</FormLabel>
                         <FormControl>
                             <MultiSelect
                                 options={takeawayOptions}
@@ -527,7 +556,7 @@ export default function RegistrationForm() {
           name="personal_project"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Do you have any personal project or something public you would like to present for the community?</FormLabel>
+              <FormLabel>Do you have any personal project or something public you would like to present for the community? (Optional)</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="we are studying dedicating 5 mins demo and maybe a People choice award"
@@ -544,7 +573,7 @@ export default function RegistrationForm() {
           name="interested_technologies"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Please select the technologies you are interested in</FormLabel>
+              <FormLabel>Please select the technologies you are interested in (Optional)</FormLabel>
               <FormControl>
                 <MultiSelect
                   options={techOptions}
@@ -562,7 +591,7 @@ export default function RegistrationForm() {
           name="additional_comments"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Additional Comments or Suggestions</FormLabel>
+              <FormLabel>Additional Comments or Suggestions (Optional)</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Feel free to provide any comments, suggestions, the most topics you're interested"
