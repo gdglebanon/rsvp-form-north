@@ -509,10 +509,14 @@ export default function RegistrationForm() {
             <FormItem>
               <FormLabel>LinkedIn Profile Link (Optional)</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input 
+                  {...field}
+                  value={field.value || ''}
+                  placeholder="https://www.linkedin.com/in/your-profile"
+                />
               </FormControl>
               <FormDescription>
-                Or write details about you, for example: I use Go for production, am learning Flutter, I’m Frontend dev, Senior Software Engineer..
+                Or write details about you, for example: I use Go for production, am learning Flutter, I'm Frontend dev, Senior Software Engineer..
               </FormDescription>
               <FormMessage />
             </FormItem>
