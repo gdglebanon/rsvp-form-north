@@ -4,8 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useState } from "react";
-
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { SuccessMessage } from "./success-message";
 import {
   Form,
   FormControl,
@@ -19,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/auth-provider";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { firestore } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -84,7 +85,9 @@ const takeawayOptions = [
 export default function RegistrationForm() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -118,7 +121,7 @@ export default function RegistrationForm() {
     try {
       const profileRef = doc(firestore, "profiles", user.uid);
       
-      // Filter out null, undefined, and empty string values before saving
+      // Filter out null, undefined, and empty string/array values before saving
       const dataToSave: Partial<FormData> = {};
       for (const key in values) {
           const typedKey = key as keyof FormData;
@@ -128,35 +131,57 @@ export default function RegistrationForm() {
               continue;
           }
           
+          // Skip empty strings and empty arrays
           if (typeof value === 'string' && value.trim() === '') {
               continue;
           }
+          
+          if (Array.isArray(value) && value.length === 0) {
+              continue;
+          }
 
-          (dataToSave as any)[typedKey] = value;
+          dataToSave[typedKey] = value as any;
       }
 
+      // Only save non-empty fields
       await setDoc(profileRef, {
         ...dataToSave,
-        createdAt: new Date(),
-      });
+        userId: user.uid,
+        email: user.email || '',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
 
+      // Show success state
+      setIsSubmitted(true);
+      
+      // Scroll to top of page
+      window.scrollTo(0, 0);
+      
+      // Show success toast
       toast({
-        title: "Profile Created!",
-        description: "Your anonymous profile has been saved successfully.",
+        title: "Success!",
+        description: "Your registration has been submitted successfully.",
       });
       
+      // Reset form
       form.reset();
       
     } catch (error) {
       console.error("Error saving profile: ", error);
       toast({
         title: "Error",
-        description: "There was an error saving your profile. Please try again.",
+        description: error instanceof Error ? error.message : "There was an error saving your profile. Please try again.",
         variant: "destructive",
       });
+      return;
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (isSubmitted) {
+    return <SuccessMessage />;
   }
 
   return (
