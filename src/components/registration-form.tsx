@@ -52,7 +52,19 @@ const formSchema = z.object({
   age_range: z.string().optional(),
   gender: z.string().optional(),
   linkedin: z.string().optional(),
-  phone: z.string().optional(),
+  phone: z.string().optional()
+    .refine((val) => {
+      if (!val) return true;
+      const num = val.replace(/[\s-]/g, '').replace(/^\+?961?/, '');
+      // For 03 numbers: 03 123 456 (8 digits total)
+      if (num.startsWith('03')) {
+        return /^03\d{6}$/.test(num);
+      }
+      // For mobile numbers: 7X XXX XXX (7 digits total, starts with 7 or 8 or 9)
+      return /^[7-9]\d{7}$/.test(num);
+    }, {
+      message: "Please enter a valid Lebanese phone number (e.g., 71 234 567 or 03 123 456)",
+    }),
   attended_before: z.string().min(1, "This field is required."),
   main_takeaways: z.array(z.string()).optional(),
   how_did_you_hear: z.string().min(1, "This field is required."),
@@ -512,10 +524,60 @@ export default function RegistrationForm() {
             <FormItem>
               <FormLabel>Phone number (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="Your Lebanese phone number" {...field} />
+                <div className="relative">
+                  <Input 
+                    placeholder="71 234 567" 
+                    value={field.value ? field.value.replace(/^\+?961/, '') : ''}
+                    onChange={(e) => {
+                      // Remove all non-digit characters and any leading 961
+                      let value = e.target.value.replace(/\D/g, '').replace(/^961/, '');
+                      
+                      // If user types '3' at the start, convert to '03' for landline
+                      if (value === '3' || (value.startsWith('3') && value.length > 1 && value[1] !== '0')) {
+                        value = '0' + value;
+                      }
+                      
+                      // Enforce max length based on number type
+                      const isLandline = value.startsWith('03');
+                      const maxDigits = isLandline ? 8 : 8; // 03 123 456 (8) or 7X XXX XXX (8)
+                      value = value.slice(0, maxDigits);
+                      
+                      // Format the number with spaces
+                      if (value.length > 0) {
+                        if (isLandline) {
+                          // Format as 03 123 456 (8 digits total)
+                          value = value.replace(/^(03)?(\d{0,2})(\d{0,3})$/, (_, p1, p2, p3) => {
+                            let result = '03';
+                            if (p2) result += ' ' + p2;
+                            if (p3) result += ' ' + p3;
+                            return result.trim();
+                          });
+                        } else {
+                          // Format as XX XXX XXX for mobile numbers (8 digits total)
+                          value = value.replace(/^(\d{0,2})(\d{0,3})(\d{0,3})$/, (_, p1, p2, p3) => {
+                            let result = '';
+                            if (p1) result += p1;
+                            if (p2) result += ' ' + p2;
+                            if (p3) result += ' ' + p3;
+                            return result.trim();
+                          });
+                        }
+                      }
+                      
+                      // Store the value with +961 prefix for validation
+                      const fullNumber = value ? `+961${value.replace(/\s/g, '')}` : '';
+                      field.onChange(fullNumber);
+                    }}
+                    inputMode="tel"
+                    className="pl-12"
+                  />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                    +961
+                  </span>
+                </div>
               </FormControl>
-               <FormDescription>
-                will be used for follow up in case you missed registration over email.
+              <FormDescription>
+                Will be used for follow up in case we can't reach you via email
               </FormDescription>
               <FormMessage />
             </FormItem>
