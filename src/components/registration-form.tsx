@@ -24,6 +24,7 @@ import { firestore } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -35,14 +36,45 @@ const formSchema = z.object({
   linkedin: z.string().optional(),
   phone: z.string().optional(),
   attended_before: z.string().min(1, "This field is required."),
-  main_takeaways: z.string().min(1, "This field is required."),
+  main_takeaways: z.array(z.string()).optional(),
   how_did_you_hear: z.string().min(1, "This field is required."),
   personal_project: z.string().optional(),
-  interested_technologies: z.string().optional(),
+  interested_technologies: z.array(z.string()).optional(),
   additional_comments: z.string().optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
+
+const techOptions = [
+    { label: "Angular", value: "angular" },
+    { label: "Node.js", value: "nodejs" },
+    { label: "Golang", value: "golang" },
+    { label: "Firebase", value: "firebase" },
+    { label: "Web Technologies", value: "web_technologies" },
+    { label: "Backend Development", value: "backend_development" },
+    { label: "Front End Development", value: "frontend_development" },
+    { label: "Cloud", value: "cloud" },
+    { label: "Kubernetes", value: "kubernetes" },
+    { label: "Microservices", value: "microservices" },
+    { label: "Database", value: "database" },
+    { label: "Android", value: "android" },
+    { label: "Flutter", value: "flutter" },
+    { label: "Machine learning", value: "machine_learning" },
+    { label: "Tensorflow", value: "tensorflow" },
+    { label: "Gemini / ChatGPT", value: "gemini_chatgpt" },
+    { label: "Cybersecurity", value: "cybersecurity" },
+    { label: "Web3 / Blockchain", value: "web3_blockchain" },
+    { label: "Other", value: "other" },
+];
+
+const takeawayOptions = [
+    { label: "Networking", value: "networking" },
+    { label: "Job Opportunites", value: "job_opportunities" },
+    { label: "Participating in Vibathon competiton", value: "vibathon" },
+    { label: "Talk to mentors / CV review", value: "mentors_cv" },
+    { label: "Attending Practical Workshop", value: "workshop" },
+    { label: "Learning new technologies", value: "new_technologies" },
+];
 
 export default function RegistrationForm() {
   const { user } = useAuth();
@@ -58,7 +90,6 @@ export default function RegistrationForm() {
       company: "",
       region: "",
       attended_before: "",
-      main_takeaways: "",
       how_did_you_hear: "",
     },
   });
@@ -336,21 +367,14 @@ export default function RegistrationForm() {
             render={({ field }) => (
                 <FormItem>
                     <FormLabel>What are your main takeaways from DevFest? *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select an option" />
-                            </SelectTrigger>
+                            <MultiSelect
+                                options={takeawayOptions}
+                                onValueChange={field.onChange}
+                                defaultValue={field.value ?? []}
+                                placeholder="Select your main takeaways"
+                            />
                         </FormControl>
-                        <SelectContent>
-                            <SelectItem value="networking">Networking</SelectItem>
-                            <SelectItem value="job_opportunities">Job Opportunites</SelectItem>
-                            <SelectItem value="vibathon">Participating in Vibathon competiton</SelectItem>
-                            <SelectItem value="mentors_cv">Talk to mentors / CV review</SelectItem>
-                            <SelectItem value="workshop">Attending Practical Workshop</SelectItem>
-                            <SelectItem value="new_technologies">Learning new technologies</SelectItem>
-                        </SelectContent>
-                    </Select>
                     <FormDescription>
                         We are organizing 90 minutes vibecoding mini hackathon with external AI API, 2 hours practical workshop. First come First serve registration in early morning with limit of 1 workshop per attendee.
                     </FormDescription>
@@ -407,10 +431,11 @@ export default function RegistrationForm() {
             <FormItem>
               <FormLabel>Please select the technologies you are interested in</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Angular, Node.js, Golang, Firebase, Web Technologies, Backend Development, Front End Development, Cloud, Kubernetes, Microservices, Database, Android, Flutter, Machine learning, Tensorflow, Gemini / ChatGPT, Cybersecurity, Web3 / Blockchain, Other"
-                  className="resize-none"
-                  {...field}
+                <MultiSelect
+                  options={techOptions}
+                  onValueChange={field.onChange}
+                  defaultValue={field.value ?? []}
+                  placeholder="Select technologies"
                 />
               </FormControl>
               <FormMessage />
