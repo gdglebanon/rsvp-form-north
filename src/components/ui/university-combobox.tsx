@@ -79,14 +79,14 @@ export function UniversityCombobox({ value, onChange }: UniversityComboboxProps)
             ? universities.find(
                 (uni) => uni.full_name?.toLowerCase() === value.toLowerCase()
               )?.full_name || value
-            : 'Select university...'}
+            : 'Select company / university...'}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command>
           <CommandInput
-            placeholder="Search university..."
+            placeholder="Search or add..."
             value={search}
             onValueChange={setSearch}
           />
