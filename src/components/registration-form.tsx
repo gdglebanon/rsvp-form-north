@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useTransition } from "react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ import { Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { UniversityCombobox } from "./ui/university-combobox";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -79,7 +80,7 @@ const takeawayOptions = [
 export default function RegistrationForm() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [isPending, startTransition] = useTransition();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -104,39 +105,49 @@ export default function RegistrationForm() {
       return;
     }
 
-    startTransition(async () => {
-      try {
-        const profileRef = doc(firestore, "profiles", user.uid);
-        
-        // Filter out undefined values
-        const dataToSave: Partial<FormData> = {};
-        for (const key in values) {
-          if (values[key as keyof FormData] !== undefined) {
-            dataToSave[key as keyof FormData] = values[key as keyof FormData];
+    setIsSubmitting(true);
+    try {
+      const profileRef = doc(firestore, "profiles", user.uid);
+      
+      // Filter out null, undefined, and empty string values before saving
+      const dataToSave: Partial<FormData> = {};
+      for (const key in values) {
+          const typedKey = key as keyof FormData;
+          const value = values[typedKey];
+
+          if (value === null || value === undefined) {
+              continue;
           }
-        }
+          
+          if (typeof value === 'string' && value.trim() === '') {
+              continue;
+          }
 
-        await setDoc(profileRef, {
-          ...dataToSave,
-          createdAt: new Date(),
-        });
-
-        toast({
-          title: "Profile Created!",
-          description: "Your anonymous profile has been saved successfully.",
-        });
-        
-        form.reset();
-        
-      } catch (error) {
-        console.error("Error saving profile: ", error);
-        toast({
-          title: "Error",
-          description: "There was an error saving your profile. Please try again.",
-          variant: "destructive",
-        });
+          (dataToSave as any)[typedKey] = value;
       }
-    });
+
+      await setDoc(profileRef, {
+        ...dataToSave,
+        createdAt: new Date(),
+      });
+
+      toast({
+        title: "Profile Created!",
+        description: "Your anonymous profile has been saved successfully.",
+      });
+      
+      form.reset();
+      
+    } catch (error) {
+      console.error("Error saving profile: ", error);
+      toast({
+        title: "Error",
+        description: "There was an error saving your profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -217,7 +228,10 @@ export default function RegistrationForm() {
             <FormItem>
               <FormLabel>Your current company / university *</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <UniversityCombobox 
+                  value={field.value} 
+                  onChange={field.onChange} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -459,8 +473,8 @@ export default function RegistrationForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? (
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : null}
           Create Profile

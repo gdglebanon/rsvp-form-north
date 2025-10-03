@@ -1,3 +1,5 @@
+"use client";
+
 import { FilePenLine } from "lucide-react";
 import RegistrationForm from "@/components/registration-form";
 
