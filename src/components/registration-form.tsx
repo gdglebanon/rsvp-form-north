@@ -243,17 +243,6 @@ export default function RegistrationForm() {
                   autoComplete="email"
                   inputMode="email"
                   {...field}
-                  onFocus={(e) => {
-                    // Only remove readonly on user interaction
-                    e.target.removeAttribute('readonly');
-                  }}
-                  onBlur={(e) => {
-                    // Set back to readonly when not focused to prevent mobile keyboard popup
-                    if (!e.target.value) {
-                      e.target.setAttribute('readonly', 'readonly');
-                    }
-                  }}
-                  readOnly
                 />
               </FormControl>
               <FormMessage />
