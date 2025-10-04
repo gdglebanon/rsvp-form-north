@@ -411,6 +411,7 @@ export default function RegistrationForm() {
                   { label: "1st or 2nd Year Student", value: "grad_student" },
                   { label: "3rd Year Student", value: "phd_student" },
                   { label: "Master Student", value: "post_grad_student" },
+                  { label: "Fresh Graduate", value: "fresh_grad" },
                 ]}
                 className="w-full"
                 onValueChange={(value) => {
