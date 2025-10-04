@@ -303,7 +303,7 @@ export default function RegistrationForm() {
 
       <div className="mb-4 p-4 bg-muted/30 rounded-lg space-y-2 text-sm">
         <p>DevFest Beirut is making a comeback! Mark your calendars for <strong>October 25th</strong> when we'll gather at <strong>Lebanese American University (LAU), Beirut Campus</strong> for a full day conference featuring talks, workshops, inspirational stories, and panels.</p>
-        <p>Our speaker lineup includes 35+ professionals from both local and international companies, including <strong>Google Developer Experts, IBM, and more</strong>.</p>
+        <p>Our speaker lineup includes 40+ professionals from both local and international companies, including <strong>Google Developer Experts, IBM, and more</strong>.</p>
         <p>We'd like to extend our gratitude to our sponsors and partners. Agenda to be published.</p>
       </div>
 
