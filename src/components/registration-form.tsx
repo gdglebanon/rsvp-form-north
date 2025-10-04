@@ -386,6 +386,7 @@ export default function RegistrationForm() {
             <FormItem>
               <FormLabel> Experience / Study *</FormLabel>
               <MultiSelect
+                inputMode="none"
                 options={[
                   { label: "< 1 year experience", value: "0-1" },
                   { label: "1-2 years experience", value: "1-2" },
@@ -632,6 +633,7 @@ export default function RegistrationForm() {
                     <FormLabel>What are your main takeaways from DevFest? *</FormLabel>
                         <FormControl>
                             <MultiSelect
+                                inputMode="none"
                                 options={takeawayOptions}
                                 onValueChange={field.onChange}
                                 defaultValue={field.value ?? []}
@@ -724,6 +726,7 @@ export default function RegistrationForm() {
               <FormLabel>Please select the technologies you are interested in (Optional)</FormLabel>
               <FormControl>
                 <MultiSelect
+                  inputMode="none"
                   options={techOptions}
                   onValueChange={field.onChange}
                   defaultValue={field.value ?? []}
