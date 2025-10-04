@@ -288,17 +288,28 @@ export default function RegistrationForm() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="flex flex-col items-center justify-center mb-8 space-y-2">
+    <div className="max-w-2xl mx-auto p-4 sm:p-6">
+      <div className="flex flex-col items-center justify-center mb-4 space-y-1">
         <Image 
           src="/images/devfest-logo.svg" 
           alt="DevFest Logo" 
-          width={200} 
-          height={80}
+          width={180} 
+          height={72}
           priority
           className="h-auto"
         />
-        <p className="text-lg font-medium text-muted-foreground">2 mins Registration Form</p>
+        <p className="text-base font-medium text-muted-foreground">Registration Form [2 mins ]</p>
+      </div>
+
+      <div className="mb-4 p-4 bg-muted/30 rounded-lg space-y-2 text-sm">
+        <p>DevFest Beirut is making a comeback! Mark your calendars for <strong>October 25th</strong> when we'll gather at <strong>Lebanese American University (LAU), Beirut Campus</strong> for a full day conference featuring talks, workshops, inspirational stories, and panels.</p>
+        <p>Our speaker lineup includes 35+ professionals from both local and international companies, including <strong>Google Developer Experts, IBM, and more</strong>.</p>
+        <p>We'd like to extend our gratitude to our sponsors and partners. Agenda to be published.</p>
+      </div>
+
+      <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-1 text-xs">
+        <h3 className="font-semibold text-foreground text-sm">Important Information</h3>
+        <p>For event diversity and to increase your chances of selection, please provide as much detail as possible in your application. <em>Optional</em> questions are skippable if you prefer not to share feedback. Please wait for confirmation in the next two weeks or you will be on the waiting list. Reach out to <a href="mailto:info@gdglebanon.com" className="text-primary hover:underline">info@gdglebanon.com</a> for clarifications.</p>
       </div>
       
       <Form {...form}>
