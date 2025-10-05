@@ -70,7 +70,6 @@ const formSchema = z.object({
   main_takeaways: z.array(z.string()).default([]),
   how_did_you_hear: z.string().min(1, "This field is required."),
   how_did_you_hear_details: z.string().optional(),
-  personal_project: z.string().optional(),
   interested_technologies: z.array(z.string()).optional(),
   additional_comments: z.string().optional(),
 });
@@ -91,7 +90,6 @@ type FormData = {
   main_takeaways: string[];
   how_did_you_hear: string;
   how_did_you_hear_details?: string;
-  personal_project?: string;
   interested_technologies?: string[];
   additional_comments?: string;
 };
@@ -153,7 +151,6 @@ export default function RegistrationForm() {
       main_takeaways: [],
       how_did_you_hear: "",
       how_did_you_hear_details: "",
-      personal_project: "",
       interested_technologies: [],
       additional_comments: ""
     },
@@ -170,7 +167,7 @@ export default function RegistrationForm() {
         'email', 'first_name', 'last_name', 'specialization', 'experience',
         'company', 'region', 'age_range', 'gender', 'linkedin', 'phone',
         'attended_before', 'main_takeaways', 'how_did_you_hear',
-        'how_did_you_hear_details', 'personal_project', 'interested_technologies',
+        'how_did_you_hear_details', 'interested_technologies',
         'additional_comments'
       ];
 
@@ -231,7 +228,6 @@ export default function RegistrationForm() {
         main_takeaways: [],
         how_did_you_hear: '',
         how_did_you_hear_details: '',
-        personal_project: '',
         interested_technologies: [],
         additional_comments: ''
       });
@@ -429,6 +425,7 @@ export default function RegistrationForm() {
                   { label: "1-2 years experience", value: "1-2" },
                   { label: "3-5 years experience", value: "3-5" },
                   { label: "5+ years experience", value: "5-7" },
+                  { label: "Freelancer", value: "freelancer" },
                   { label: "CTO / CEO / Executive", value: "cto_ceo" },
                   { label: "Manager / Team Lead", value: "manager_teamlead" },
                   { label: "Intern", value: "intern" },
@@ -665,56 +662,34 @@ export default function RegistrationForm() {
         />
         
         <FormField
-            control={form.control}
-            name="main_takeaways"
-            render={({ field }) => (
-                <FormItem>
-                    <FormLabel>What are your main takeaways from DevFest? *</FormLabel>
-                    <div className="space-y-2">
-                        {[
-                            { value: 'learned_new_tech', label: 'Learned new technologies' },
-                            { value: 'networking', label: 'Networking opportunities' },
-                            { value: 'workshops', label: 'Hands-on workshops' },
-                            { value: 'speakers', label: 'Inspiring speakers' },
-                            { value: 'other', label: 'Other' }
-                        ].map((item) => {
-                            const field = form.register('main_takeaways');
-                            const value = form.watch('main_takeaways') || [];
-                            
-                            return (
-                                <FormField
-                                    key={item.value}
-                                    control={form.control}
-                                    name="main_takeaways"
-                                    render={({ field: { onChange } }) => (
-                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                            <FormControl>
-                                                <Checkbox
-                                                    {...field}
-                                                    checked={value.includes(item.value)}
-                                                    onCheckedChange={(checked) => {
-                                                        const newValue = checked
-                                                            ? [...value, item.value]
-                                                            : value.filter((v: string) => v !== item.value);
-                                                        onChange(newValue);
-                                                    }}
-                                                />
-                                            </FormControl>
-                                            <FormLabel className="font-normal">
-                                                {item.label}
-                                            </FormLabel>
-                                        </FormItem>
-                                    )}
-                                />
-                            );
-                        })}
-                    </div>
-                    <FormDescription>
-                        We are organising 90 minutes vibecoding mini hackathon with external AI API, 2 hours practical workshop. First come First serve registration in early morning with limit of 1 workshop per attendee.
-                    </FormDescription>
-                    <FormMessage />
-                </FormItem>
-            )}
+          control={form.control}
+          name="main_takeaways"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>What are your main takeaways from DevFest? *</FormLabel>
+              <FormControl>
+                <MultiSelect
+                  inputMode="none"
+                  options={[
+                    { label: 'Learned new technologies', value: 'learned_new_tech' },
+                    { label: 'Networking opportunities', value: 'networking' },
+                    { label: 'Hands-on workshops', value: 'workshops' },
+                    { label: 'Inspiring speakers', value: 'speakers' },
+                    { label: 'Community building', value: 'community' },
+                    { label: 'Career development', value: 'career' },
+                    { label: 'Other', value: 'other' }
+                  ]}
+                  onValueChange={field.onChange}
+                  defaultValue={field.value ?? []}
+                  placeholder="Select your main takeaways"
+                />
+              </FormControl>
+              <FormDescription>
+                Select all that apply. Your feedback helps us improve future events.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
         />
         <FormField
             control={form.control}
@@ -772,23 +747,6 @@ export default function RegistrationForm() {
         />
         <FormField
           control={form.control}
-          name="personal_project"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Do you have any personal project or something public you would like to present for the community? (Optional)</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="we are studying dedicating 5 mins demo and maybe a People choice award"
-                  className="resize-none"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
           name="interested_technologies"
           render={({ field }) => (
             <FormItem>
@@ -814,8 +772,8 @@ export default function RegistrationForm() {
               <FormLabel>Additional Comments or Suggestions (Optional)</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Feel free to provide any comments, suggestions, the most topics you're interested"
-                  className="resize-none"
+                  placeholder="Feel free to provide any comments, suggestions, or topics you're interested in. Also, let us know if you have any personal projects you'd like to present to the community (we're considering 5-minute demos with a People's Choice Award)."
+                  className="resize-none min-h-[120px]"
                   {...field}
                 />
               </FormControl>

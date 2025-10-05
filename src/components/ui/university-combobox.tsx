@@ -17,8 +17,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { firestore } from '@/lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
 
 interface University {
   id: string;
@@ -49,52 +47,14 @@ const defaultUniversities: University[] = [
 
 export function UniversityCombobox({ value = '', onChange }: UniversityComboboxProps) {
   const [open, setOpen] = React.useState(false);
-  const [universities, setUniversities] = React.useState<University[]>(defaultUniversities);
   const [search, setSearch] = React.useState('');
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 
-  React.useEffect(() => {
-    const fetchUniversities = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(firestore, 'universities'));
-        
-        if (!querySnapshot.empty) {
-          const fetchedUniversities = querySnapshot.docs.map(
-            (doc) => {
-              const data = doc.data();
-              // Handle both field name variations
-              return {
-                id: doc.id,
-                full_name: data.full_name || data.name,
-                abbreviation: data.abbreviation,
-                alt_text: data.alt_text || data.alt
-              } as University;
-            }
-          );
-          
-          // Combine default universities with fetched ones, avoiding duplicates by id or abbreviation
-          const combined = [...defaultUniversities];
-          fetchedUniversities.forEach(uni => {
-            const exists = combined.some(u => 
-              u.id.toLowerCase() === uni.id.toLowerCase() ||
-              u.abbreviation.toLowerCase() === uni.abbreviation?.toLowerCase()
-            );
-            if (!exists) {
-              combined.push(uni);
-            }
-          });
-          
-          // Sort universities alphabetically by full name
-          combined.sort((a, b) => a.full_name.localeCompare(b.full_name));
-          
-          setUniversities(combined);
-        }
-      } catch (error) {
-        console.error('Error fetching universities:', error);
-      }
-    };
-    
-    fetchUniversities();
+  const universities = React.useMemo(() => {
+    // Sort default universities alphabetically by full name
+    const sorted = [...defaultUniversities];
+    sorted.sort((a, b) => a.full_name.localeCompare(b.full_name));
+    return sorted;
   }, []);
 
   const handleSelect = (currentValue: string) => {
@@ -120,28 +80,29 @@ export function UniversityCombobox({ value = '', onChange }: UniversityComboboxP
     
     const searchTerms = searchTerm.toLowerCase().split(/\s+/);
     
-    const searchInText = (text?: string): boolean => {
+    const searchInText = (text: string | undefined): boolean => {
       if (!text) return false;
       const lowerText = text.toLowerCase();
       return searchTerms.every(term => lowerText.includes(term));
     };
 
-    return universities.filter(uni => {
+    return universities.filter((uni: University) => {
       if (!uni) return false;
       
       return (
         searchInText(uni.full_name) ||
         searchInText(uni.abbreviation) ||
         searchInText(uni.alt_text) ||
-        (uni.alt_text?.split(/\s*,\s*/).some(part => searchInText(part)) ?? false)
+        (uni.alt_text?.split(/\s*,\s*/).some((part: string) => searchInText(part)) ?? false)
       );
     });
   }, [universities, search]);
 
   const selectedUniversity = React.useMemo(() => {
     return universities.find(
-      (uni) => uni?.full_name?.toLowerCase() === value?.toLowerCase() ||
-               uni?.abbreviation?.toLowerCase() === value?.toLowerCase()
+      (uni: University) => 
+        (uni.full_name?.toLowerCase() === value?.toLowerCase()) ||
+        (uni.abbreviation?.toLowerCase() === value?.toLowerCase())
     );
   }, [universities, value]);
 
