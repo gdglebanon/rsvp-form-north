@@ -42,6 +42,116 @@ const defaultUniversities: University[] = [
     full_name: 'Lebanese American University',
     abbreviation: 'LAU',
     alt_text: 'LAU'
+  },
+  {
+    id: 'usj',
+    full_name: 'Saint Joseph University of Beirut',
+    abbreviation: 'USJ'
+  },
+  {
+    id: 'lu',
+    full_name: 'Lebanese University',
+    abbreviation: 'LU'
+  },
+  {
+    id: 'bau',
+    full_name: 'Beirut Arab University',
+    abbreviation: 'BAU'
+  },
+  {
+    id: 'uob',
+    full_name: 'University of Balamand',
+    abbreviation: 'UOB'
+  },
+  {
+    id: 'ndu',
+    full_name: 'Notre Dame University-Louaize',
+    abbreviation: 'NDU'
+  },
+  {
+    id: 'usek',
+    full_name: 'Holy Spirit University of Kaslik',
+    abbreviation: 'USEK'
+  },
+  {
+    id: 'haigazian',
+    full_name: 'Haigazian University',
+    abbreviation: 'HU'
+  },
+  {
+    id: 'upa',
+    full_name: 'Antonine University',
+    abbreviation: 'UPA'
+  },
+  {
+    id: 'iul',
+    full_name: 'Islamic University of Lebanon',
+    abbreviation: 'IUL'
+  },
+  {
+    id: 'global',
+    full_name: 'Global University',
+    abbreviation: 'GU'
+  },
+  {
+    id: 'jinan',
+    full_name: 'Jinan University',
+    abbreviation: 'JU'
+  },
+  {
+    id: 'aul',
+    full_name: 'Arts, Sciences and Technology University in Lebanon',
+    abbreviation: 'AUL'
+  },
+  {
+    id: 'liu',
+    full_name: 'Lebanese International University',
+    abbreviation: 'LIU'
+  },
+  {
+    id: 'mut',
+    full_name: 'Manar University of Tripoli',
+    abbreviation: 'MUT'
+  },
+  {
+    id: 'meu',
+    full_name: 'Middle East University',
+    abbreviation: 'MEU'
+  },
+  {
+    id: 'sagesse',
+    full_name: 'Sagesse University',
+    abbreviation: 'ULS'
+  },
+  {
+    id: 'aust',
+    full_name: 'American University of Science and Technology',
+    abbreviation: 'AUST'
+  },
+  {
+    id: 'rhu',
+    full_name: 'Rafik Hariri University',
+    abbreviation: 'RHU'
+  },
+  {
+    id: 'aut',
+    full_name: 'American University of Technology',
+    abbreviation: 'AUT'
+  },
+  {
+    id: 'mubs',
+    full_name: 'Modern University for Business and Science',
+    abbreviation: 'MUBS'
+  },
+  {
+    id: 'aku',
+    full_name: 'Al-Kafaàt University',
+    abbreviation: 'AKU'
+  },
+  {
+    id: 'self',
+    full_name: 'Self taught',
+    abbreviation: 'SELF'
   }
 ];
 
