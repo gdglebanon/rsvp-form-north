@@ -32,9 +32,24 @@ interface UniversityComboboxProps {
   onChange: (value: string) => void;
 }
 
+const defaultUniversities: University[] = [
+  {
+    id: 'aub',
+    full_name: 'American University of Beirut',
+    abbreviation: 'AUB',
+    alt_text: 'AUB'
+  },
+  {
+    id: 'lau',
+    full_name: 'Lebanese American University',
+    abbreviation: 'LAU',
+    alt_text: 'LAU'
+  }
+];
+
 export function UniversityCombobox({ value = '', onChange }: UniversityComboboxProps) {
   const [open, setOpen] = React.useState(false);
-  const [universities, setUniversities] = React.useState<University[]>([]);
+  const [universities, setUniversities] = React.useState<University[]>(defaultUniversities);
   const [search, setSearch] = React.useState('');
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 
@@ -43,25 +58,37 @@ export function UniversityCombobox({ value = '', onChange }: UniversityComboboxP
       try {
         const querySnapshot = await getDocs(collection(firestore, 'universities'));
         
-        if (querySnapshot.empty) {
-          console.warn('No universities found in the database');
-          return;
+        if (!querySnapshot.empty) {
+          const fetchedUniversities = querySnapshot.docs.map(
+            (doc) => {
+              const data = doc.data();
+              // Handle both field name variations
+              return {
+                id: doc.id,
+                full_name: data.full_name || data.name,
+                abbreviation: data.abbreviation,
+                alt_text: data.alt_text || data.alt
+              } as University;
+            }
+          );
+          
+          // Combine default universities with fetched ones, avoiding duplicates by id or abbreviation
+          const combined = [...defaultUniversities];
+          fetchedUniversities.forEach(uni => {
+            const exists = combined.some(u => 
+              u.id.toLowerCase() === uni.id.toLowerCase() ||
+              u.abbreviation.toLowerCase() === uni.abbreviation?.toLowerCase()
+            );
+            if (!exists) {
+              combined.push(uni);
+            }
+          });
+          
+          // Sort universities alphabetically by full name
+          combined.sort((a, b) => a.full_name.localeCompare(b.full_name));
+          
+          setUniversities(combined);
         }
-        
-        const fetchedUniversities = querySnapshot.docs.map(
-          (doc) => {
-            const data = doc.data();
-            // Handle both field name variations
-            return {
-              id: doc.id,
-              full_name: data.full_name || data.name, // Handle both full_name and name
-              abbreviation: data.abbreviation,
-              alt_text: data.alt_text || data.alt // Handle both alt_text and alt
-            } as University;
-          }
-        );
-        
-        setUniversities(fetchedUniversities);
       } catch (error) {
         console.error('Error fetching universities:', error);
       }

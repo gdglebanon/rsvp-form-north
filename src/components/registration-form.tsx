@@ -20,15 +20,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/components/auth-provider";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { firestore } from "@/lib/firebase";
+// Removed Firebase imports as we'll be using API
 import { Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { UniversityCombobox } from "./ui/university-combobox";
+// Removed UniversityCombobox import as we'll use a simple select
 import Image from "next/image";
+import { Checkbox } from "@radix-ui/react-checkbox";
+import { UniversityCombobox } from "./ui/university-combobox";
 
 const formSchema = z.object({
   email: z
@@ -67,7 +67,7 @@ const formSchema = z.object({
       message: "Please enter a valid Lebanese phone number (e.g., 71 234 567 or 03 123 456)",
     }),
   attended_before: z.string().min(1, "This field is required."),
-  main_takeaways: z.array(z.string()).optional(),
+  main_takeaways: z.array(z.string()).default([]),
   how_did_you_hear: z.string().min(1, "This field is required."),
   how_did_you_hear_details: z.string().optional(),
   personal_project: z.string().optional(),
@@ -88,7 +88,7 @@ type FormData = {
   linkedin?: string;
   phone?: string;
   attended_before: string;
-  main_takeaways?: string[];
+  main_takeaways: string[];
   how_did_you_hear: string;
   how_did_you_hear_details?: string;
   personal_project?: string;
@@ -128,7 +128,7 @@ const takeawayOptions = [
 ];
 
 export default function RegistrationForm() {
-  const { user } = useAuth();
+  // Removed useAuth as we don't need user from Firebase
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -147,57 +147,66 @@ export default function RegistrationForm() {
       region: "",
       age_range: "",
       gender: "",
-      how_did_you_hear_details: "",
+      linkedin: "",
+      phone: "",
       attended_before: "",
+      main_takeaways: [],
       how_did_you_hear: "",
+      how_did_you_hear_details: "",
+      personal_project: "",
+      interested_technologies: [],
+      additional_comments: ""
     },
   });
 
-  async function onSubmit(values: FormData) {
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be signed in to create a profile.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const onSubmit = async (values: FormData) => {
     setIsSubmitting(true);
     try {
-      const profileRef = doc(firestore, "profiles", user.uid);
-      
       // Filter out null, undefined, and empty string/array values before saving
-      const dataToSave: Partial<FormData> = {};
-      for (const key in values) {
-          const typedKey = key as keyof FormData;
-          const value = values[typedKey];
+      const dataToSave: Record<string, any> = {};
+      
+      // Explicitly handle each field to ensure type safety
+      const fields: (keyof FormData)[] = [
+        'email', 'first_name', 'last_name', 'specialization', 'experience',
+        'company', 'region', 'age_range', 'gender', 'linkedin', 'phone',
+        'attended_before', 'main_takeaways', 'how_did_you_hear',
+        'how_did_you_hear_details', 'personal_project', 'interested_technologies',
+        'additional_comments'
+      ];
 
-          if (value === null || value === undefined) {
-              continue;
-          }
-          
-          // Skip empty strings and empty arrays
-          if (typeof value === 'string' && value.trim() === '') {
-              continue;
-          }
-          
-          if (Array.isArray(value) && value.length === 0) {
-              continue;
-          }
+      fields.forEach((field) => {
+        const value = values[field];
+        
+        if (value === null || value === undefined) {
+          return;
+        }
+        
+        // Skip empty strings
+        if (typeof value === 'string' && value.trim() === '') {
+          return;
+        }
+        
+        // Skip empty arrays
+        if (Array.isArray(value) && value.length === 0) {
+          return;
+        }
+        
+        dataToSave[field] = value;
+      });
 
-          dataToSave[typedKey] = value as any;
+      // Send data to API endpoint
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSave),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to submit registration');
       }
-
-      // Only save non-empty fields
-      await setDoc(profileRef, {
-        ...dataToSave,
-        userId: user.uid,
-        // Use the form's email if available, otherwise fall back to the authenticated user's email
-        email: values.email || user.email || '',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      }, { merge: true });
 
       // Show success state
       setIsSubmitted(true);
@@ -205,17 +214,34 @@ export default function RegistrationForm() {
       // Scroll to top of page
       window.scrollTo(0, 0);
       
-      // Reset form
-      form.reset();
-      
-    } catch (error) {
-      console.error("Error saving profile: ", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "There was an error saving your profile. Please try again.",
-        variant: "destructive",
+      // Reset form with default values
+      form.reset({
+        email: '',
+        first_name: '',
+        last_name: '',
+        specialization: '',
+        experience: [],
+        company: '',
+        region: '',
+        age_range: '',
+        gender: '',
+        linkedin: '',
+        phone: '',
+        attended_before: '',
+        main_takeaways: [],
+        how_did_you_hear: '',
+        how_did_you_hear_details: '',
+        personal_project: '',
+        interested_technologies: [],
+        additional_comments: ''
       });
-      return;
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred',
+        variant: 'destructive',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -439,7 +465,7 @@ export default function RegistrationForm() {
                   onChange={field.onChange} 
                 />
               </FormControl>
-              <FormMessage />
+
             </FormItem>
           )}
         />
@@ -637,23 +663,54 @@ export default function RegistrationForm() {
                 </FormItem>
             )}
         />
+        
         <FormField
             control={form.control}
             name="main_takeaways"
             render={({ field }) => (
                 <FormItem>
                     <FormLabel>What are your main takeaways from DevFest? *</FormLabel>
-                        <FormControl>
-                            <MultiSelect
-                                inputMode="none"
-                                options={takeawayOptions}
-                                onValueChange={field.onChange}
-                                defaultValue={field.value ?? []}
-                                placeholder="Select your main takeaways"
-                            />
-                        </FormControl>
+                    <div className="space-y-2">
+                        {[
+                            { value: 'learned_new_tech', label: 'Learned new technologies' },
+                            { value: 'networking', label: 'Networking opportunities' },
+                            { value: 'workshops', label: 'Hands-on workshops' },
+                            { value: 'speakers', label: 'Inspiring speakers' },
+                            { value: 'other', label: 'Other' }
+                        ].map((item) => {
+                            const field = form.register('main_takeaways');
+                            const value = form.watch('main_takeaways') || [];
+                            
+                            return (
+                                <FormField
+                                    key={item.value}
+                                    control={form.control}
+                                    name="main_takeaways"
+                                    render={({ field: { onChange } }) => (
+                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                            <FormControl>
+                                                <Checkbox
+                                                    {...field}
+                                                    checked={value.includes(item.value)}
+                                                    onCheckedChange={(checked) => {
+                                                        const newValue = checked
+                                                            ? [...value, item.value]
+                                                            : value.filter((v: string) => v !== item.value);
+                                                        onChange(newValue);
+                                                    }}
+                                                />
+                                            </FormControl>
+                                            <FormLabel className="font-normal">
+                                                {item.label}
+                                            </FormLabel>
+                                        </FormItem>
+                                    )}
+                                />
+                            );
+                        })}
+                    </div>
                     <FormDescription>
-                        We are organizing 90 minutes vibecoding mini hackathon with external AI API, 2 hours practical workshop. First come First serve registration in early morning with limit of 1 workshop per attendee.
+                        We are organising 90 minutes vibecoding mini hackathon with external AI API, 2 hours practical workshop. First come First serve registration in early morning with limit of 1 workshop per attendee.
                     </FormDescription>
                     <FormMessage />
                 </FormItem>
@@ -766,14 +823,14 @@ export default function RegistrationForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : null}
-          Create Profile
-        </Button>
-      </form>
-    </Form>
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : null}
+            Create Profile
+          </Button>
+        </form>
+      </Form>
   </div>
   );
 }
