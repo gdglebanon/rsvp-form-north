@@ -20,15 +20,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-// Removed Firebase imports as we'll be using API
 import { Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { MultiSelect } from "@/components/ui/multi-select";
-// Removed UniversityCombobox import as we'll use a simple select
+import { UniversityCombobox } from "@/components/ui/university-combobox";
 import Image from "next/image";
-import { Checkbox } from "@radix-ui/react-checkbox";
-import { UniversityCombobox } from "./ui/university-combobox";
 
 const formSchema = z.object({
   email: z
@@ -162,7 +159,7 @@ export default function RegistrationForm() {
     // Map form data to match expected API field names
     const dataToSave: Record<string, string> = {};
     
-    // Convert all values to strings and add to dataToSave
+    // Prepare the data to be sent
     const fields = {
       firstName: values.first_name,
       lastName: values.last_name,
@@ -179,7 +176,10 @@ export default function RegistrationForm() {
       interestedIn: values.interested_technologies?.join(', '),
       comments: values.additional_comments,
       reference: values.reference,
-      referenceDetails: values.referenceDetails
+      // Only include referenceDetails if reference is 'partner' or 'other'
+      ...((values.reference === 'partner' || values.reference === 'other') && {
+        referenceDetails: values.referenceDetails || ''
+      })
     };
 
     // Convert all values to strings and filter out empty values

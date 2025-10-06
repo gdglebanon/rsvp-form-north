@@ -1,6 +1,7 @@
-import type {NextConfig} from 'next';
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'standalone',
+  generateBuildId: () => 'build-' + Date.now(),
   /* config options here */
   typescript: {
     ignoreBuildErrors: true,
@@ -30,6 +31,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    // Important: return the modified config
+    return config;
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
