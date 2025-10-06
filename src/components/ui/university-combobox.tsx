@@ -51,7 +51,7 @@ const defaultUniversities: University[] = [
   {
     id: 'lu',
     full_name: 'Lebanese University',
-    abbreviation: 'LU'
+    abbreviation: 'LU, LUFS1, ULFG1'
   },
   {
     id: 'bau',
@@ -161,9 +161,15 @@ export function UniversityCombobox({ value = '', onChange }: UniversityComboboxP
   const buttonRef = React.useRef<HTMLButtonElement>(null);
 
   const universities = React.useMemo(() => {
-    // Sort default universities alphabetically by full name
+    // Sort universities with LAU first, then sort the rest alphabetically
     const sorted = [...defaultUniversities];
-    sorted.sort((a, b) => a.full_name.localeCompare(b.full_name));
+    sorted.sort((a, b) => {
+      // Keep LAU first
+      if (a.id === 'lau') return -1;
+      if (b.id === 'lau') return 1;
+      // Sort the rest alphabetically
+      return a.full_name.localeCompare(b.full_name);
+    });
     return sorted;
   }, []);
 
