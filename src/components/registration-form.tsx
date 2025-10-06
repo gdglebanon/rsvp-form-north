@@ -310,14 +310,14 @@ export default function RegistrationForm() {
       </div>
 
       <div className="mb-4 p-4 bg-muted/30 rounded-lg space-y-2 text-sm">
-        <p>DevFest Beirut is making a comeback! Mark your calendars for <strong>October 25th</strong> when we'll gather at <strong>Lebanese American University (LAU), Beirut Campus</strong> for a full day conference featuring talks, workshops, inspirational stories, and panels.</p>
-        <p>Our speaker lineup includes 40+ professionals from both local and international companies, including <strong>Google Developer Experts, IBM, and more</strong>.</p>
-        <p>We'd like to extend our gratitude to our sponsors and partners. Agenda to be published.</p>
+        <p>DevFest Beirut is back! Join us on <strong>October 25th</strong> at the <strong>Lebanese American University (LAU), Beirut Campus</strong> for a full-day conference packed with inspiring talks, hands-on workshops, thought-provoking panels, and stories that spark innovation.</p>
+        <p>This year's lineup features <strong>45+ speakers</strong> from leading local and international organizations, including <strong>Google Developer Experts, IBM, and many more</strong>.</p>
+        <p>A big thank you goes out to our amazing sponsors and partners for making this possible. Stay tuned, the full agenda will be published soon!</p>
       </div>
 
       <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-1 text-xs">
         <h3 className="font-semibold text-foreground text-sm">Important Information</h3>
-        <p>For event diversity and to increase your chances of selection, please provide as much detail as possible in your application. <em>Optional</em> questions are skippable if you prefer not to share feedback. Please wait for confirmation in the next two weeks or you will be on the waiting list. Reach out to <a href="mailto:info@gdglebanon.com" className="text-primary hover:underline">info@gdglebanon.com</a> for clarifications.</p>
+        <p>All applicants will be subject to approval based on suitability, technical experience, and diversity, therefore try to provide detailed responses; otherwise, you may be waitlisted. If you have not heard back from us within two weeks, you are considered waitlisted. You will receive an email with your final registration status. For clarifications, contact <a href="mailto:info@gdglebanon.com" className="text-primary hover:underline">info@gdglebanon.com</a></p>
       </div>
       
       <Form {...form}>
