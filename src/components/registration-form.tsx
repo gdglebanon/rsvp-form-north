@@ -778,7 +778,7 @@ export default function RegistrationForm() {
             {isSubmitting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : null}
-            Create Profile
+            Submit
           </Button>
         </form>
       </Form>
