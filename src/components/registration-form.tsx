@@ -68,8 +68,8 @@ const formSchema = z.object({
     }),
   attended_before: z.string().min(1, "This field is required."),
   main_takeaways: z.array(z.string()).default([]),
-  how_did_you_hear: z.string().min(1, "This field is required."),
-  how_did_you_hear_details: z.string().optional(),
+  reference: z.string().min(1, "This field is required."),
+  referenceDetails: z.string().optional(),
   interested_technologies: z.array(z.string()).optional(),
   additional_comments: z.string().optional(),
 });
@@ -88,8 +88,8 @@ type FormData = {
   phone?: string;
   attended_before: string;
   main_takeaways: string[];
-  how_did_you_hear: string;
-  how_did_you_hear_details?: string;
+  reference: string;
+  referenceDetails?: string;
   interested_technologies?: string[];
   additional_comments?: string;
 };
@@ -149,8 +149,8 @@ export default function RegistrationForm() {
       phone: "",
       attended_before: "",
       main_takeaways: [],
-      how_did_you_hear: "",
-      how_did_you_hear_details: "",
+      reference: "",
+      referenceDetails: "",
       interested_technologies: [],
       additional_comments: ""
     },
@@ -158,79 +158,65 @@ export default function RegistrationForm() {
 
   const onSubmit = async (values: FormData) => {
     setIsSubmitting(true);
+    
+    // Map form data to match expected API field names
+    const dataToSave: Record<string, string> = {};
+    
+    // Convert all values to strings and add to dataToSave
+    const fields = {
+      firstName: values.first_name,
+      lastName: values.last_name,
+      email: values.email,
+      specialization: values.specialization,
+      experience: values.experience?.join(', '),
+      company: values.company,
+      region: values.region,
+      age: values.age_range,
+      gender: values.gender,
+      linkedin: values.linkedin,
+      phone: values.phone,
+      attendedBefore: values.attended_before,
+      interestedIn: values.interested_technologies?.join(', '),
+      comments: values.additional_comments,
+      reference: values.reference,
+      referenceDetails: values.referenceDetails
+    };
+
+    // Convert all values to strings and filter out empty values
+    Object.entries(fields).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        dataToSave[key] = String(value);
+      }
+    });
+
     try {
-      // Filter out null, undefined, and empty string/array values before saving
-      const dataToSave: Record<string, any> = {};
-      
-      // Explicitly handle each field to ensure type safety
-      const fields: (keyof FormData)[] = [
-        'email', 'first_name', 'last_name', 'specialization', 'experience',
-        'company', 'region', 'age_range', 'gender', 'linkedin', 'phone',
-        'attended_before', 'main_takeaways', 'how_did_you_hear',
-        'how_did_you_hear_details', 'interested_technologies',
-        'additional_comments'
-      ];
-
-      fields.forEach((field) => {
-        const value = values[field];
-        
-        if (value === null || value === undefined) {
-          return;
-        }
-        
-        // Skip empty strings
-        if (typeof value === 'string' && value.trim() === '') {
-          return;
-        }
-        
-        // Skip empty arrays
-        if (Array.isArray(value) && value.length === 0) {
-          return;
-        }
-        
-        dataToSave[field] = value;
-      });
-
-      // Send data to API endpoint
-      const response = await fetch('/api/register', {
+      const response = await fetch('https://script.google.com/macros/s/AKfycbwrxrfRoLUd5VFU1WwNnHPeZb45XldRPPznGSRTBe99wSHBc_BB0QEGFiU8tsAcpnsTwQ/exec', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'text/plain',
         },
         body: JSON.stringify(dataToSave),
+        // Remove no-cors to be able to read the response
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to submit registration');
+      // Try to parse the response as JSON
+      let result;
+      try {
+        result = await response.json();
+      } catch (e) {
+        throw new Error('Invalid response from server');
       }
 
-      // Show success state
-      setIsSubmitted(true);
-      
-      // Scroll to top of page
-      window.scrollTo(0, 0);
-      
-      // Reset form with default values
-      form.reset({
-        email: '',
-        first_name: '',
-        last_name: '',
-        specialization: '',
-        experience: [],
-        company: '',
-        region: '',
-        age_range: '',
-        gender: '',
-        linkedin: '',
-        phone: '',
-        attended_before: '',
-        main_takeaways: [],
-        how_did_you_hear: '',
-        how_did_you_hear_details: '',
-        interested_technologies: [],
-        additional_comments: ''
-      });
+      if (result.status === true) {
+        // Show success state
+        setIsSubmitted(true);
+        // Scroll to top of page
+        window.scrollTo(0, 0);
+        // Reset form
+        form.reset();
+      } else {
+        throw new Error(result.error || 'Failed to submit registration');
+      }
     } catch (error) {
       console.error('Error submitting form:', error);
       toast({
@@ -693,7 +679,7 @@ export default function RegistrationForm() {
         />
         <FormField
             control={form.control}
-            name="how_did_you_hear"
+            name="reference"
             render={({ field }) => (
                 <FormItem>
                     <FormLabel>How did you hear about DevFest? *</FormLabel>
@@ -714,34 +700,41 @@ export default function RegistrationForm() {
                         </SelectContent>
                     </Select>
                     <FormMessage />
-                    {(form.watch('how_did_you_hear') === 'partner' || form.watch('how_did_you_hear') === 'other') && (
-                      <div className="mt-4">
-                        <FormField
-                          control={form.control}
-                          name="how_did_you_hear_details"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>
-                                {form.watch('how_did_you_hear') === 'partner' 
-                                  ? 'Partner Name *' 
-                                  : 'Please specify here'}
-                              </FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder={
-                                    form.watch('how_did_you_hear') === 'partner'
-                                      ? 'Please specify the partner name'
-                                      : 'Please provide more details about how you heard about DevFest'
-                                  }
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    )}
+                    {(() => {
+                      const referenceValue = form.watch('reference');
+                      const showDetails = referenceValue === 'partner' || referenceValue === 'other';
+                      
+                      if (!showDetails) return null;
+                      
+                      return (
+                        <div className="mt-4">
+                          <FormField
+                            control={form.control}
+                            name="referenceDetails"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  {referenceValue === 'partner' 
+                                    ? 'Partner Name *' 
+                                    : 'Please specify here'}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder={
+                                      referenceValue === 'partner'
+                                        ? 'Please specify the partner name'
+                                        : 'Please provide more details about how you heard about DevFest'
+                                    }
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      );
+                    })()}
                 </FormItem>
             )}
         />

@@ -13,6 +13,12 @@ export function SuccessMessage() {
       <p className="text-gray-600 mb-4 max-w-md">
         Thank you for registering for DevFest. We've received your information and will be in touch soon.
       </p>
+      <div className="bg-blue-50 p-4 rounded-lg mb-6 max-w-md text-left">
+        <h3 className="font-medium text-blue-800 mb-2">Important Next Steps</h3>
+        <p className="text-blue-700 text-sm">
+          You should have received an email to <strong>verify your email address</strong>. Please check your inbox (and spam folder) and click the verification link to ensure we can review your application.
+        </p>
+      </div>
       <p className="text-gray-500 text-sm mb-8 max-w-md">
         Please don't fill the form again or on behalf of your friends using the same device.
       </p>
