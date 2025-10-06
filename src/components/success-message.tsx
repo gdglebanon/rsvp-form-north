@@ -16,7 +16,7 @@ export function SuccessMessage() {
       <div className="bg-blue-50 p-4 rounded-lg mb-6 max-w-md text-left">
         <h3 className="font-medium text-blue-800 mb-2">Important Next Steps</h3>
         <p className="text-blue-700 text-sm">
-          You should have received an email for confirming your submission.
+          Please check your inbox/spam to verify your email so we can move forward with reviewing your application.
         </p>
       </div>
       <p className="text-gray-500 text-sm mb-8 max-w-md">
