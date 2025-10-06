@@ -1,4 +1,4 @@
-# **App Name**: Anonymous Register
+# **App Name**: DevFest Registeration 
 
 ## Core Features:
 
