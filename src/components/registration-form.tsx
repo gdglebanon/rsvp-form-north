@@ -417,9 +417,9 @@ export default function RegistrationForm() {
                   { label: "Intern", value: "intern" },
                   { label: "Bootcamp Attendee", value: "bootcamp" },
                   { label: "University Student", value: "student" },
-                  { label: "1st or 2nd Year Student", value: "grad_student" },
-                  { label: "3rd Year Student", value: "phd_student" },
-                  { label: "Master Student", value: "post_grad_student" },
+                  { label: "1st or 2nd Year Student", value: "undergrad_student" },
+                  { label: "3rd Year Student", value: "post_grad" },
+                  { label: "Master Student / PHD", value: "grad_student" },
                   { label: "Fresh Graduate", value: "fresh_grad" },
                 ]}
                 className="w-full"
