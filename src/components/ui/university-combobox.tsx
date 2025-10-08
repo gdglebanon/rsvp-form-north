@@ -180,7 +180,13 @@ const defaultUniversities: University[] = [
     full_name: 'Self taught',
     abbreviation: 'SELF',
     alt_text: 'Self-taught, Self-taught logo, Self-learning icon, Self-educated, Independent learning, Self taught path'
-  }
+  },
+  {
+    id: 'mu',
+    full_name: 'Al Maaref University',
+    abbreviation: 'MU',
+    alt_text: 'Al Maaref University, Almaaref, Al maaref, MU Uni, MU, Maaref'
+  },
 ];
 
 export function UniversityCombobox({ value = '', onChange }: UniversityComboboxProps) {
