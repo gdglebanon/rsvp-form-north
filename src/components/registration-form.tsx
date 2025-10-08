@@ -46,6 +46,7 @@ const formSchema = z.object({
   specialization: z.string().min(1, "Specialization is required."),
   experience: z.string().array().min(1, "Please select at least one option"),
   company: z.string().min(1, "Company or university is required."),
+  education: z.string().optional(),
   region: z.string().min(1, "Region is required."),
   age_range: z.string().optional(),
   gender: z.string().optional(),
@@ -78,6 +79,7 @@ type FormData = {
   specialization: string;
   experience: string[];
   company: string;
+  education?: string;
   region: string;
   age_range?: string;
   gender?: string;
@@ -129,6 +131,8 @@ export default function RegistrationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
+  const [isUniversitySelected, setIsUniversitySelected] = useState(false);
+  const [isCustomCompany, setIsCustomCompany] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -167,6 +171,7 @@ export default function RegistrationForm() {
       specialization: values.specialization,
       experience: values.experience?.join(', '),
       company: values.company,
+      education: values.education,
       region: values.region,
       age: values.age_range,
       gender: values.gender,
@@ -190,7 +195,7 @@ export default function RegistrationForm() {
     });
 
     try {
-      const response = await fetch('https://script.google.com/macros/s/AKfycbzrbbaACh20agrIgIzzmIi_LiJ-jxO3PZcZ4H8ie5s4xaCLULxYlewpElsDHypCdUcL/exec', {
+      const response = await fetch('https://script.google.com/macros/s/AKfycbyv2133LacMA15i5R6exrsvNSEDzbzxmgcPPmx80GPZlifOjNFcG7iSO9Fa_t6ZOHrw6A/exec', {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain',
@@ -443,12 +448,43 @@ export default function RegistrationForm() {
             <FormItem>
               <FormLabel>Your current company / university *</FormLabel>
               <FormControl>
-                <UniversityCombobox 
-                  value={field.value} 
-                  onChange={field.onChange} 
-                />
+                <div className="space-y-2">
+                  <UniversityCombobox 
+                    value={field.value} 
+                    onChange={(value: string, isCustom?: boolean) => {
+                      field.onChange(value);
+                      // Check if a university is selected (value is not empty) and not a custom entry
+                      const isUniSelected = !!value && !isCustom;
+                      setIsUniversitySelected(isUniSelected);
+                      setIsCustomCompany(!!isCustom);
+                      // Clear education field when not a university
+                      if (!isUniSelected) {
+                        form.setValue('education', '');
+                      }
+                    }} 
+                  />
+                </div>
               </FormControl>
-
+              {isUniversitySelected && !isCustomCompany && (
+                <div className="mt-4">
+                  <FormField
+                    control={form.control}
+                    name="education"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Major / Field of Study *</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="e.g., Computer Science, Engineering, Business Administration" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </FormItem>
           )}
         />
