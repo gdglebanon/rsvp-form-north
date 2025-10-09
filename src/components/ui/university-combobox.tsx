@@ -146,6 +146,12 @@ const defaultUniversities: University[] = [
     alt_text: 'Sagesse University (ULS), ULS logo, Sagesse University logo, Universite La Sagesse, Sagesse Univ Lebanon, ULS Lebanon'
   },
   {
+    id: 'aou',
+    full_name: 'Arab Open University',
+    abbreviation: 'AOU, AO University',
+    alt_text: 'Arab Open University (AOU), AOU logo, Arab Open University logo, AOU Lebanon, Arab Open Uni, AOU Beirut, AO University, Arab Open University Lebanon'
+  },
+  {
     id: 'aust',
     full_name: 'American University of Science and Technology',
     abbreviation: 'AUST',

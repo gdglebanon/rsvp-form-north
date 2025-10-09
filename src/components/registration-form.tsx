@@ -181,6 +181,7 @@ export default function RegistrationForm() {
       interestedIn: values.interested_technologies?.join(', '),
       comments: values.additional_comments,
       reference: values.reference,
+      mainTakeways: values.main_takeaways?.join(', '),
       // Only include referenceDetails if reference is 'partner' or 'other'
       ...((values.reference === 'partner' || values.reference === 'other') && {
         referenceDetails: values.referenceDetails || ''
@@ -195,7 +196,7 @@ export default function RegistrationForm() {
     });
 
     try {
-      const response = await fetch('https://script.google.com/macros/s/AKfycbyv2133LacMA15i5R6exrsvNSEDzbzxmgcPPmx80GPZlifOjNFcG7iSO9Fa_t6ZOHrw6A/exec', {
+      const response = await fetch('https://script.google.com/macros/s/AKfycbzTNOgJMzig3PjfXa3NeORRU4nFjIJgO8vhqPr0Msy3IQvIOCk1Q3ie9LMjXtRkaE_fCA/exec', {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain',
@@ -693,12 +694,13 @@ export default function RegistrationForm() {
                 <MultiSelect
                   inputMode="none"
                   options={[
-                    { label: 'Learned new technologies', value: 'learned_new_tech' },
+                    { label: 'Learning new technologies', value: 'learned_new_tech' },
                     { label: 'Networking opportunities', value: 'networking' },
                     { label: 'Hands-on workshops', value: 'workshops' },
                     { label: 'Inspiring speakers', value: 'speakers' },
                     { label: 'Community building', value: 'community' },
                     { label: 'Career development', value: 'career' },
+                    { label: 'Join 90-Min Vibathon Challenge',  value:'vibathon'},
                     { label: 'Other', value: 'other' }
                   ]}
                   onValueChange={field.onChange}
