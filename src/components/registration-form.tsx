@@ -196,7 +196,7 @@ export default function RegistrationForm() {
     });
 
     try {
-      const response = await fetch('https://script.google.com/macros/s/AKfycbzTNOgJMzig3PjfXa3NeORRU4nFjIJgO8vhqPr0Msy3IQvIOCk1Q3ie9LMjXtRkaE_fCA/exec', {
+      const response = await fetch('https://script.google.com/macros/s/AKfycbyJkJMV52dI_v8FAVLEbkRRDuOTmRhwMp4xJ1HeD-t7HDQ5Cv-yxyRImVwS8_IhnOYFdg/exec', {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain',
@@ -266,7 +266,7 @@ export default function RegistrationForm() {
               rel="noopener noreferrer"
               className="text-primary hover:underline"
             >
-              GDG Coast Lebanon
+              GDG North, Lebanon
             </a></p>
             
             <p>You can also follow DevFest updates on Instagram 
@@ -276,7 +276,7 @@ export default function RegistrationForm() {
                 rel="noopener noreferrer"
                 className="text-primary hover:underline ml-1"
               >
-                @gdgcoastlebanon
+                @gdgnorthlebanon
               </a>{' '}
               <a 
                 href="https://www.instagram.com/devfestlebanon/" 
@@ -316,8 +316,8 @@ export default function RegistrationForm() {
       </div>
 
       <div className="mb-4 p-4 bg-muted/30 rounded-lg space-y-2 text-sm">
-        <p>DevFest Beirut is back! Join us on <strong>October 25th</strong> at the <strong>Lebanese American University (LAU), Beirut Campus</strong> for a full-day conference packed with inspiring talks, hands-on workshops, thought-provoking panels, and stories that spark innovation.</p>
-        <p>This year's lineup features <strong>45+ speakers</strong> from leading local and international organizations, including <strong>Google Developer Experts, IBM, and many more</strong>.</p>
+        <p>DevFest North is coming! Join us on <strong>December 20th</strong> at <strong>Beirut Arab University, Tripoli Campus</strong> for a full-day conference packed with inspiring talks, hands-on workshops, thought-provoking panels, and stories that spark innovation.</p>
+        <p>This year's lineup features <strong>20+ speakers</strong> from leading local and international organizations, including <strong>Google Developer Experts, IBM, and many more</strong>.</p>
         <p>A big thank you goes out to our amazing sponsors and partners for making this possible. Stay tuned, the full agenda will be published soon!</p>
       </div>
 
@@ -700,7 +700,7 @@ export default function RegistrationForm() {
                     { label: 'Inspiring speakers', value: 'speakers' },
                     { label: 'Community building', value: 'community' },
                     { label: 'Career development', value: 'career' },
-                    { label: 'Join 90-Min Vibathon Challenge',  value:'vibathon'},
+                    { label: 'Join the Open Source Challenge',  value:'challenge'},
                     { label: 'Other', value: 'other' }
                   ]}
                   onValueChange={field.onChange}
