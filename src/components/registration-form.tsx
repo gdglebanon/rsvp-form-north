@@ -196,7 +196,7 @@ export default function RegistrationForm() {
     });
 
     try {
-      const response = await fetch('https://script.google.com/macros/s/AKfycbzJ6rLLmOmORVwElYi7L0wjdzd9FlvueFjU3BkoCxvNMP6V0SxZ6Gq9L55ZdJyklPRK9A/exec', {
+      const response = 'https://script.google.com/macros/s/AKfycby2a8ccAEehcZBv-YFtOUYtNntYXitcmwJ4fQjAN7IxYC3agLFW36oDDtIFL0oyumAJqQ/exec', {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain',
