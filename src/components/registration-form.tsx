@@ -506,7 +506,8 @@ export default function RegistrationForm() {
                             <SelectItem value="metn_baabda">Metn / Baabda</SelectItem>
                             <SelectItem value="jbeil_keserwen">Jbeil / Keserwen</SelectItem>
                             <SelectItem value="aley_chouf">Aley / Chouf</SelectItem>
-                            <SelectItem value="akkar_north">Akkar / North</SelectItem>
+                            <SelectItem value="north">North</SelectItem>
+                            <SelectItem value="akkar">Akkar</SelectItem>                            
                             <SelectItem value="south_nabatiyi">South / Nabatiyi</SelectItem>
                             <SelectItem value="beqaa_hermel">Beqaa / Hermel</SelectItem>
                             <SelectItem value="outside_lebanon">Outside Lebanon</SelectItem>
