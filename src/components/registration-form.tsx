@@ -317,13 +317,13 @@ export default function RegistrationForm() {
 
       <div className="mb-4 p-4 bg-muted/30 rounded-lg space-y-2 text-sm">
         <p>DevFest North is coming! Join us on <strong>December 20th</strong> at <strong>Beirut Arab University, Tripoli Campus</strong> for a full-day conference packed with inspiring talks, hands-on workshops, thought-provoking panels, and stories that spark innovation.</p>
-        <p>This year's lineup features <strong>20+ speakers</strong> from leading local and international organizations, including <strong>Google Developer Experts, IBM, and many more</strong>.</p>
+        <p>This year's lineup features <strong>20+ speakers</strong> from leading local and international organizations, including <strong>Google Developer Experts, and many more</strong>.</p>
         <p>A big thank you goes out to our amazing sponsors and partners for making this possible. Stay tuned, the full agenda will be published soon!</p>
       </div>
 
       <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-1 text-xs">
         <h3 className="font-semibold text-foreground text-sm">Important Information</h3>
-        <p>All applicants will be subject to approval based on suitability, technical experience, and diversity, therefore try to provide detailed responses; otherwise, you may be waitlisted. If you have not heard back from us within two weeks, you are considered waitlisted. You will receive an email with your final registration status. For clarifications, contact <a href="mailto:info@gdglebanon.com" className="text-primary hover:underline">info@gdglebanon.com</a></p>
+        <p>All applicants will be subject to approval based on suitability, technical experience, and diversity, therefore try to provide detailed responses; otherwise, you may be waitlisted. If you have not heard back by December 14th you are considered waitlisted. You will receive an email with your final registration status. For clarifications, contact <a href="mailto:info@gdglebanon.com" className="text-primary hover:underline">info@gdglebanon.com</a></p>
       </div>
       
       <Form {...form}>
