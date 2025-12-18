@@ -4,8 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import * as z from "zod";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { SuccessMessage } from "./success-message";
 import {
@@ -27,7 +27,7 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { UniversityCombobox } from "@/components/ui/university-combobox";
 import Image from "next/image";
 
-const formSchema = z.object({
+const baseSchema = z.object({
   email: z
     .string()
     .min(1, "Email is required")
@@ -44,13 +44,8 @@ const formSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
   last_name: z.string().min(1, "Last name is required"),
   specialization: z.string().min(1, "Specialization is required."),
-  experience: z.string().array().min(1, "Please select at least one option"),
   company: z.string().min(1, "Company or university is required."),
   education: z.string().optional(),
-  region: z.string().min(1, "Region is required."),
-  age_range: z.string().optional(),
-  gender: z.string().optional(),
-  linkedin: z.string().optional(),
   phone: z.string().optional()
     .refine((val) => {
       if (!val) return true;
@@ -64,6 +59,14 @@ const formSchema = z.object({
     }, {
       message: "Please enter a valid Lebanese phone number (e.g., 71 234 567 or 03 123 456)",
     }),
+  linkedin: z.string().optional(),
+});
+
+const defaultSchema = baseSchema.extend({
+  experience: z.string().array().min(1, "Please select at least one option"),
+  region: z.string().min(1, "Region is required."),
+  age_range: z.string().optional(),
+  gender: z.string().optional(),
   attended_before: z.string().min(1, "This field is required."),
   main_takeaways: z.array(z.string()).default([]),
   reference: z.string().min(1, "This field is required."),
@@ -75,27 +78,22 @@ const formSchema = z.object({
   }),
 });
 
-type FormData = {
-  secret_code: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  specialization: string;
-  experience: string[];
-  company: string;
-  education?: string;
-  region: string;
-  age_range?: string;
-  gender?: string;
-  linkedin?: string;
-  phone?: string;
-  attended_before: string;
-  main_takeaways: string[];
-  reference: string;
-  referenceDetails?: string;
-  interested_technologies?: string[];
-  additional_comments?: string;
-};
+const partnerSchema = baseSchema.extend({
+  // Partner mode makes these optional/ignored
+  experience: z.string().array().optional(),
+  region: z.string().optional(),
+  age_range: z.string().optional(),
+  gender: z.string().optional(),
+  attended_before: z.string().optional(),
+  main_takeaways: z.array(z.string()).default([]),
+  reference: z.string().optional(),
+  referenceDetails: z.string().optional(),
+  interested_technologies: z.array(z.string()).optional(),
+  additional_comments: z.string().optional(),
+  secret_code: z.string().optional(),
+});
+
+type FormData = z.infer<typeof defaultSchema> & z.infer<typeof partnerSchema>;
 
 const techOptions = [
   { label: "Angular", value: "angular" },
@@ -129,9 +127,23 @@ const takeawayOptions = [
 ];
 
 export default function RegistrationForm() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegistrationFormContent />
+    </Suspense>
+  );
+}
+
+function RegistrationFormContent() {
   // Removed useAuth as we don't need user from Firebase
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isPartner = searchParams.has("partner");
+  const isSpeaker = searchParams.has("speaker");
+  const isVolunteer = searchParams.has("volunteer");
+  const isSpecialMode = isPartner || isSpeaker || isVolunteer;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [selectedExperience, setSelectedExperience] = useState<string[]>([]);
@@ -139,7 +151,7 @@ export default function RegistrationForm() {
   const [isCustomCompany, setIsCustomCompany] = useState(false);
 
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(isSpecialMode ? partnerSchema : defaultSchema),
     defaultValues: {
       secret_code: "",
       email: "",
@@ -165,6 +177,13 @@ export default function RegistrationForm() {
   const onSubmit = async (values: FormData) => {
     setIsSubmitting(true);
 
+    const isModalComment = () => {
+      if (isPartner) return "PARTNER_EXTERNAL";
+      if (isSpeaker) return "SPEAKER_EXTERNAL";
+      if (isVolunteer) return "VOLUNTEER_EXTERNAL";
+      return values.additional_comments;
+    };
+
     // Map form data to match expected API field names
     const dataToSave: Record<string, string> = {};
 
@@ -184,7 +203,7 @@ export default function RegistrationForm() {
       phone: values.phone,
       attendedBefore: values.attended_before,
       interestedIn: values.interested_technologies?.join(', '),
-      comments: values.additional_comments,
+      comments: isModalComment(),
       reference: values.reference,
       mainTakeways: values.main_takeaways?.join(', '),
       // Only include referenceDetails if reference is 'partner' or 'other'
@@ -326,33 +345,44 @@ export default function RegistrationForm() {
         <p>A big thank you goes out to our amazing sponsors and partners for making this possible. Stay tuned, the full agenda <a href="https://north25.gdglebanon.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">north25.gdglebanon.com</a></p>
       </div>
 
-      <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg space-y-1 text-xs border border-yellow-200 dark:border-yellow-800">
-        <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 text-sm">⚠️ Registration Closed</h3>
-        <p className="text-yellow-700 dark:text-yellow-300">Registration is closed, but you can still attend on Saturday! Please note that a lunch meal might not be guaranteed for last minute attendees.</p>
-        <p className="text-yellow-700 dark:text-yellow-300">Enter the secret code below to submit your registration.</p>
-      </div>
+      {!isSpecialMode && (
+        <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg space-y-1 text-xs border border-yellow-200 dark:border-yellow-800">
+          <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 text-sm">⚠️ Registration Closed</h3>
+          <p className="text-yellow-700 dark:text-yellow-300">Registration is closed, but you can still attend on Saturday! Please note that a lunch meal might not be guaranteed for last minute attendees.</p>
+          <p className="text-yellow-700 dark:text-yellow-300">Enter the secret code below to submit your registration.</p>
+        </div>
+      )}
+
+      {isSpecialMode && (
+        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-1 text-xs border border-blue-200 dark:border-blue-800">
+          <h3 className="font-semibold text-blue-800 dark:text-blue-200 text-sm">ℹ️ Networking Tip</h3>
+          <p className="text-blue-700 dark:text-blue-300">We recommend filling all the fields for easier networking, as we will use this info to print your QR code badge.</p>
+        </div>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="secret_code"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Secret Code *</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter secret code"
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Only valid codes will enable submission
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!isSpecialMode && (
+            <FormField
+              control={form.control}
+              name="secret_code"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Secret Code *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Enter secret code"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Only valid codes will enable submission (Hint: contains RSVP)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <FormField
             control={form.control}
             name="email"
@@ -429,6 +459,7 @@ export default function RegistrationForm() {
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="experience"
@@ -467,6 +498,7 @@ export default function RegistrationForm() {
               </FormItem>
             )}
           />
+
           <FormField
             control={form.control}
             name="company"
@@ -514,79 +546,83 @@ export default function RegistrationForm() {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="region"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Please select your region (or nearest) *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select your region" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="beirut">Beirut</SelectItem>
-                    <SelectItem value="metn_baabda">Metn / Baabda</SelectItem>
-                    <SelectItem value="jbeil_keserwen">Jbeil / Keserwen</SelectItem>
-                    <SelectItem value="aley_chouf">Aley / Chouf</SelectItem>
-                    <SelectItem value="north">North</SelectItem>
-                    <SelectItem value="akkar">Akkar</SelectItem>
-                    <SelectItem value="south_nabatiyi">South / Nabatiyi</SelectItem>
-                    <SelectItem value="beqaa_hermel">Beqaa / Hermel</SelectItem>
-                    <SelectItem value="outside_lebanon">Outside Lebanon</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {!isSpecialMode && (
             <FormField
               control={form.control}
-              name="age_range"
+              name="region"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Age Range (Optional)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <FormLabel>Please select your region (or nearest) *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select age range" />
+                        <SelectValue placeholder="Select your region" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="18-23">18 - 23 years</SelectItem>
-                      <SelectItem value="24-30">24 - 30 years</SelectItem>
-                      <SelectItem value="30+">30+ years</SelectItem>
+                      <SelectItem value="beirut">Beirut</SelectItem>
+                      <SelectItem value="metn_baabda">Metn / Baabda</SelectItem>
+                      <SelectItem value="jbeil_keserwen">Jbeil / Keserwen</SelectItem>
+                      <SelectItem value="aley_chouf">Aley / Chouf</SelectItem>
+                      <SelectItem value="north">North</SelectItem>
+                      <SelectItem value="akkar">Akkar</SelectItem>
+                      <SelectItem value="south_nabatiyi">South / Nabatiyi</SelectItem>
+                      <SelectItem value="beqaa_hermel">Beqaa / Hermel</SelectItem>
+                      <SelectItem value="outside_lebanon">Outside Lebanon</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="gender"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Gender (Optional)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+          )}
+          {!isSpecialMode && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="age_range"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Age Range (Optional)</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select age range" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="18-23">18 - 23 years</SelectItem>
+                        <SelectItem value="24-30">24 - 30 years</SelectItem>
+                        <SelectItem value="30+">30+ years</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="gender"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Gender (Optional)</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
           <FormField
             control={form.control}
             name="linkedin"
@@ -685,123 +721,131 @@ export default function RegistrationForm() {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="attended_before"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Have you attended DevFest before? *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an option" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="yes_once">Yes once</SelectItem>
-                    <SelectItem value="never_invited">Never got invited</SelectItem>
-                    <SelectItem value="invited_not_attended">Got invited before but didn't attend</SelectItem>
-                    <SelectItem value="attended_gdg">I attended some GDG events</SelectItem>
-                    <SelectItem value="first_time">First time to hear about GDG / DevFest</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!isSpecialMode && (
+            <FormField
+              control={form.control}
+              name="attended_before"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Have you attended DevFest before? *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an option" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="yes_once">Yes once</SelectItem>
+                      <SelectItem value="never_invited">Never got invited</SelectItem>
+                      <SelectItem value="invited_not_attended">Got invited before but didn't attend</SelectItem>
+                      <SelectItem value="attended_gdg">I attended some GDG events</SelectItem>
+                      <SelectItem value="first_time">First time to hear about GDG / DevFest</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
-          <FormField
-            control={form.control}
-            name="main_takeaways"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>What are your main takeaways from DevFest? *</FormLabel>
-                <FormControl>
-                  <MultiSelect
-                    inputMode="none"
-                    options={[
-                      { label: 'Learning new technologies', value: 'learned_new_tech' },
-                      { label: 'Networking opportunities', value: 'networking' },
-                      { label: 'Hands-on workshops', value: 'workshops' },
-                      { label: 'Inspiring speakers', value: 'speakers' },
-                      { label: 'Community building', value: 'community' },
-                      { label: 'Career development', value: 'career' },
-                      { label: 'Join the Open Source Challenge', value: 'challenge' },
-                      { label: 'Other', value: 'other' }
-                    ]}
-                    onValueChange={field.onChange}
-                    defaultValue={field.value ?? []}
-                    placeholder="Select your main takeaways"
-                  />
-                </FormControl>
-                <FormDescription>
-                  Select all that apply. Your feedback helps us improve future events.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="reference"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>How did you hear about DevFest? *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an option" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="social_media">Social Media (Instagram, Facebook, LinkedIn)</SelectItem>
-                    <SelectItem value="university">University / College</SelectItem>
-                    <SelectItem value="friends">Friends / Colleagues</SelectItem>
-                    <SelectItem value="gdg_website">GDG Lebanon website / newsletter</SelectItem>
-                    <SelectItem value="other_events">Other community events</SelectItem>
-                    <SelectItem value="partner">Via a partner</SelectItem>
-                    <SelectItem value="other">Other (please specify)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-                {(() => {
-                  const referenceValue = form.watch('reference');
-                  const showDetails = referenceValue === 'partner' || referenceValue === 'other';
-
-                  if (!showDetails) return null;
-
-                  return (
-                    <div className="mt-4">
-                      <FormField
-                        control={form.control}
-                        name="referenceDetails"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>
-                              {referenceValue === 'partner'
-                                ? 'Partner Name *'
-                                : 'Please specify here'}
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder={
-                                  referenceValue === 'partner'
-                                    ? 'Please specify the partner name'
-                                    : 'Please provide more details about how you heard about DevFest'
-                                }
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+          {!isSpecialMode && (
+            <>
+              <FormField
+                control={form.control}
+                name="main_takeaways"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>What are your main takeaways from DevFest? *</FormLabel>
+                    <FormControl>
+                      <MultiSelect
+                        inputMode="none"
+                        options={[
+                          { label: 'Learning new technologies', value: 'learned_new_tech' },
+                          { label: 'Networking opportunities', value: 'networking' },
+                          { label: 'Hands-on workshops', value: 'workshops' },
+                          { label: 'Inspiring speakers', value: 'speakers' },
+                          { label: 'Community building', value: 'community' },
+                          { label: 'Career development', value: 'career' },
+                          { label: 'Join the Open Source Challenge', value: 'challenge' },
+                          { label: 'Other', value: 'other' }
+                        ]}
+                        onValueChange={field.onChange}
+                        defaultValue={field.value ?? []}
+                        placeholder="Select your main takeaways"
                       />
-                    </div>
-                  );
-                })()}
-              </FormItem>
-            )}
-          />
+                    </FormControl>
+                    <FormDescription>
+                      Select all that apply. Your feedback helps us improve future events.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="reference"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>How did you hear about DevFest? *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an option" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="social_media">Social Media (Instagram, Facebook, LinkedIn)</SelectItem>
+                        <SelectItem value="university">University / College</SelectItem>
+                        <SelectItem value="friends">Friends / Colleagues</SelectItem>
+                        <SelectItem value="gdg_website">GDG Lebanon website / newsletter</SelectItem>
+                        <SelectItem value="other_events">Other community events</SelectItem>
+                        <SelectItem value="partner">Via a partner</SelectItem>
+                        <SelectItem value="other">Other (please specify)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    {(() => {
+                      const referenceValue = form.watch('reference');
+                      const showDetails = referenceValue === 'partner' || referenceValue === 'other';
+
+                      if (!showDetails) return null;
+
+                      return (
+                        <div className="mt-4">
+                          <FormField
+                            control={form.control}
+                            name="referenceDetails"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>
+                                  {referenceValue === 'partner'
+                                    ? 'Partner Name *'
+                                    : 'Please specify here'}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder={
+                                      referenceValue === 'partner'
+                                        ? 'Please specify the partner name'
+                                        : 'Please provide more details about how you heard about DevFest'
+                                    }
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      );
+                    })()}
+                  </FormItem>
+                )}
+              />
+
+            </>
+          )}
+
           <FormField
             control={form.control}
             name="interested_technologies"
@@ -821,24 +865,26 @@ export default function RegistrationForm() {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="additional_comments"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Additional Comments or Suggestions (Optional)</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Feel free to provide any comments, suggestions, or topics you're interested in. Also, let us know if you have any personal projects you'd like to present to the community (we're considering 5-minute demos with a People's Choice Award)."
-                    className="resize-none min-h-[120px]"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit" className="w-full" disabled={isSubmitting || !form.watch('secret_code')?.includes('RSVP')}>
+          {!isSpecialMode && (
+            <FormField
+              control={form.control}
+              name="additional_comments"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Additional Comments or Suggestions (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Feel free to provide any comments, suggestions, or topics you're interested in. Also, let us know if you have any personal projects you'd like to present to the community (we're considering 5-minute demos with a People's Choice Award)."
+                      className="resize-none min-h-[120px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          <Button type="submit" className="w-full" disabled={isSubmitting || (!isSpecialMode && !form.watch('secret_code')?.includes('RSVP'))}>
             {isSubmitting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : null}
