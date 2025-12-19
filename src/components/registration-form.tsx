@@ -75,7 +75,7 @@ const defaultSchema = baseSchema.extend({
   additional_comments: z.string().optional(),
   secret_code: z.string().min(1, "Secret code is required").refine(val => {
     // Check if code contains RSVP (always valid)
-    if (val.includes("RSVP")) return true;
+    if (val.includes("RSVP2025")) return true;
 
     // Check if code contains BAU and if it's still valid (expires Dec 19, 2025 at 2pm Beirut time GMT+2)
     if (val.includes("BAU")) {
