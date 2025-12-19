@@ -73,7 +73,19 @@ const defaultSchema = baseSchema.extend({
   referenceDetails: z.string().optional(),
   interested_technologies: z.array(z.string()).optional(),
   additional_comments: z.string().optional(),
-  secret_code: z.string().min(1, "Secret code is required").refine(val => val.includes("RSVP"), {
+  secret_code: z.string().min(1, "Secret code is required").refine(val => {
+    // Check if code contains RSVP (always valid)
+    if (val.includes("RSVP")) return true;
+
+    // Check if code contains BAU and if it's still valid (expires Dec 19, 2025 at 2pm Beirut time GMT+2)
+    if (val.includes("BAU")) {
+      const now = new Date();
+      const expiryDate = new Date('2025-12-19T14:00:00+02:00'); // 2pm Beirut time (GMT+2)
+      return now < expiryDate;
+    }
+
+    return false;
+  }, {
     message: "Invalid secret code. Registration is closed.",
   }),
 });
@@ -376,7 +388,7 @@ function RegistrationFormContent() {
                     />
                   </FormControl>
                   <FormDescription>
-                    Only valid codes will enable submission (Hint: contains RSVP)
+                    Only valid codes will enable submission 
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -884,7 +896,22 @@ function RegistrationFormContent() {
               )}
             />
           )}
-          <Button type="submit" className="w-full" disabled={isSubmitting || (!isSpecialMode && !form.watch('secret_code')?.includes('RSVP'))}>
+          <Button type="submit" className="w-full" disabled={isSubmitting || (!isSpecialMode && (() => {
+            const code = form.watch('secret_code');
+            if (!code) return true;
+
+            // Check if code contains RSVP (always valid)
+            if (code.includes('RSVP')) return false;
+
+            // Check if code contains BAU and if it's still valid
+            if (code.includes('BAU')) {
+              const now = new Date();
+              const expiryDate = new Date('2025-12-19T14:00:00+02:00'); // 2pm Beirut time (GMT+2)
+              return now >= expiryDate; // disabled if expired
+            }
+
+            return true; // disabled if no valid code
+          })())}>
             {isSubmitting ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : null}
