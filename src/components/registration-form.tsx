@@ -220,7 +220,7 @@ function RegistrationFormContent() {
     });
 
     try {
-      const response = await fetch('https://script.google.com/macros/s/AKfycbytyfuLVEtxvHLIdG5NZreweywANqTyx0Uu0VgO3iFCQgUD02ULM6jkI4F0KS0xwHKzVQ/exec', {
+      const response = await fetch('https://script.google.com/macros/s/AKfycbwFxw5-r3B8QA6Sm4E2APNA1PAc0GW8m_LZWJZxvzdlUlRr5vbnIiDCfevXIV33bSfeXQ/exec', {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain',
